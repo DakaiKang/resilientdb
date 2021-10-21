@@ -3,6 +3,7 @@
 
 #include "global.h"
 #include "array.h"
+#include <bits/stdint-uintn.h>
 #include <mutex>
 
 class ycsb_request;
@@ -137,6 +138,19 @@ public:
     void init() {}
     void release() {}
     uint64_t batch_id;
+};
+
+class VerifierResponseMessage : public Message
+{
+  public:
+    void copy_from_buf(char *buf);
+    void copy_to_buf(char *buf);
+    void copy_from_txn(TxnManager *txn);
+    void copy_to_txn(TxnManager *txn);
+    uint64_t get_size();
+    void init() {}
+    void release() {}
+    uint64_t num_writes;
 };
 
 class ClientQueryMessage : public Message
@@ -318,27 +332,6 @@ public:
     uint32_t batch_size;
 };
 
-class ExecuteMessage : public Message
-{
-public:
-    void copy_from_buf(char *buf);
-    void copy_to_buf(char *buf);
-    void copy_from_txn(TxnManager *txn);
-    void copy_to_txn(TxnManager *txn);
-    uint64_t get_size();
-    void init() {}
-    void release() {}
-
-    uint64_t view;        // primary node id
-    uint64_t index;       // position in sequence of requests
-    string hash;          //request message digest
-    uint64_t hashSize;    //size of hash (for removing from buf)
-    uint64_t return_node; //id of node that sent this message
-
-    uint64_t end_index;
-    uint64_t batch_size;
-};
-
 class CheckpointMessage : public Message
 {
 public:
@@ -411,6 +404,34 @@ public:
     uint64_t end_index; // x99
     uint64_t batch_size;
 };
+
+
+
+class ExecuteMessage : public Message
+{
+public:
+    void copy_from_buf(char *buf);
+    void copy_to_buf(char *buf);
+    void copy_from_txn(TxnManager *txn);
+    void copy_to_txn(TxnManager *txn);
+    uint64_t get_size();
+    void init() {}
+    void release() {}
+
+    uint64_t view;        // primary node id
+    uint64_t index;       // position in sequence of requests
+    string hash;          //request message digest
+    uint64_t hashSize;    //size of hash (for removing from buf)
+    uint64_t return_node; //id of node that sent this message
+
+    uint64_t end_index;
+    uint64_t batch_size;
+
+    uint64_t num_commit_msgs;
+    vector<PBFTCommitMessage *> commit_msgs;
+
+};
+
 /****************************************/
 /*	GEO BFT SPECIFIC		*/
 /****************************************/

@@ -19,6 +19,22 @@ void YCSBTxnManager::reset()
     TxnManager::reset();
 }
 
+string YCSBTxnManager::get_contract() {
+  YCSBQuery *ycsb_query = (YCSBQuery *)query;
+  ycsb_request *yreq;
+  string contract_set;
+  for (uint i = 0; i < ycsb_query->requests.size(); i++) {
+    yreq = ycsb_query->requests[i];
+    string key_string = "\"" + to_string(yreq->key) + "\"";
+    string value_string = "\"" + to_string(yreq->value) + "\"";
+    contract_set += key_string + ":" + value_string;
+    if (i != ycsb_query->requests.size() - 1) {
+      contract_set += ",";
+    }
+  }
+  return contract_set;
+}
+
 RC YCSBTxnManager::run_txn()
 {
     uint64_t starttime = get_sys_clock();

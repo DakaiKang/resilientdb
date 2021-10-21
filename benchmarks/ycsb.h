@@ -30,6 +30,7 @@ class YCSBTxnManager : public TxnManager
 public:
     void init(uint64_t thd_id, Workload *h_wl);
     void reset();
+    string get_contract();
     RC run_txn();
 
 private:

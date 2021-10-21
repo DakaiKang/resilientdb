@@ -5,6 +5,7 @@
 #include "global.h"
 #include "message.h"
 #include "crypto.h"
+#include <bits/stdint-uintn.h>
 #include <fstream>
 #include <ctime>
 #include <string>
@@ -128,6 +129,9 @@ Message *Message::create_message(RemReqType rtype)
 	case BATCH_REQ:
 		msg = new BatchRequests;
 		break;
+  case V_RESP:
+    msg = new VerifierResponseMessage;
+    break;
 
 #if VIEW_CHANGES == true
 	case VIEW_CHANGE:
@@ -360,6 +364,13 @@ void Message::release_message(Message *msg)
 		delete m_msg;
 		break;
 	}
+  case V_RESP:
+  {
+    VerifierResponseMessage *m_msg = (VerifierResponseMessage*)msg;
+    m_msg->release();
+    delete m_msg;
+    break;
+  }
 
 #if VIEW_CHANGES == true
 	case VIEW_CHANGE:
@@ -1012,6 +1023,34 @@ void DoneMessage::copy_to_buf(char *buf)
 
 /************************/
 
+uint64_t VerifierResponseMessage::get_size() {
+  uint64_t sz = Message::mget_size();
+  // account for num_writes
+  sz += sizeof(uint64_t);
+  return sz;
+}
+
+void VerifierResponseMessage::copy_from_txn(TxnManager* txn) {
+}
+
+void VerifierResponseMessage::copy_to_txn(TxnManager* txn) {
+}
+
+void VerifierResponseMessage::copy_from_buf(char* buf) {
+  // do stuff here;
+  /* We leave Message/inherited members uninitialized, since we'll do
+   * nothing with them
+   */
+  uint64_t ptr = 0;
+  COPY_VAL(num_writes, buf, ptr);
+  ptr += Message::mget_size();
+  assert(ptr == get_size());
+}
+
+void VerifierResponseMessage::copy_to_buf(char* buf) {
+}
+
+/************************/
 uint64_t QueryResponseMessage::get_size()
 {
 	uint64_t size = Message::mget_size();
@@ -1548,6 +1587,12 @@ uint64_t ExecuteMessage::get_size()
 	size += sizeof(end_index);
 	size += sizeof(batch_size);
 
+  // Account for size of commit messages:
+  size += sizeof(num_commit_msgs);
+  for (uint64_t i = 0; i < commit_msgs.size(); i++) {
+    size += commit_msgs[i]->get_size();
+  }
+
 	return size;
 }
 
@@ -1563,6 +1608,18 @@ void ExecuteMessage::copy_from_txn(TxnManager *txn)
 	this->hash = txn->get_hash();
 	this->hashSize = txn->get_hashSize();
 	this->return_node = g_node_id;
+
+  // Copy commit messages from transaction manager:
+  this->num_commit_msgs = txn->commit_msgs.size();
+  PBFTCommitMessage *cmsg;
+  for (uint64_t i = 0; i < this->num_commit_msgs; i++) {
+    cmsg = txn->commit_msgs[i];
+    char *buf = create_msg_buffer(cmsg);
+    Message *deepCMsg = deep_copy_msg(buf, cmsg);
+    this->commit_msgs.push_back((PBFTCommitMessage *)deepCMsg);
+    delete_msg_buffer(buf);
+  }
+
 }
 
 void ExecuteMessage::copy_to_txn(TxnManager *txn)
@@ -1585,6 +1642,14 @@ void ExecuteMessage::copy_from_buf(char *buf)
 	COPY_VAL(return_node, buf, ptr);
 	COPY_VAL(end_index, buf, ptr);
 	COPY_VAL(batch_size, buf, ptr);
+
+  // Copy commit messages from buffer:
+  COPY_VAL(num_commit_msgs, buf, ptr);
+  for (uint64_t i = 0; i < num_commit_msgs; i++) {
+    Message *msg = create_message(&buf[ptr]);
+    ptr += msg->get_size();
+    commit_msgs.push_back((PBFTCommitMessage *)msg);
+  }
 
 	assert(ptr == get_size());
 }
@@ -1609,6 +1674,14 @@ void ExecuteMessage::copy_to_buf(char *buf)
 	COPY_BUF(buf, return_node, ptr);
 	COPY_BUF(buf, end_index, ptr);
 	COPY_BUF(buf, batch_size, ptr);
+
+  // Copy commit message to buffer:
+  COPY_BUF(buf, num_commit_msgs, ptr);
+  assert(num_commit_msgs == commit_msgs.size());
+  for (uint64_t i = 0; i < commit_msgs.size(); i++) {
+    commit_msgs[i]->copy_to_buf(&buf[ptr]);
+    ptr += commit_msgs[i]->get_size();
+  }
 
 	assert(ptr == get_size());
 }

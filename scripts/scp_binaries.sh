@@ -3,16 +3,21 @@ USERNAME=ubuntu
 home_directory="/home/ubuntu"
 nodes=$1
 ifconfig=$2
+verifier_host=$3
 input="./ifconfig.txt"
+
+
+scp verifier verifier_config.json ${USERNAME}@${verifier_host}:${home_directory}/vdb/ 
+
 i=0
 while IFS= read -r line
 do
 
 	if_cmd="scp ifconfig.txt ${USERNAME}@${line}:${home_directory}/resilientdb/"
 	if [ "$i" -lt "$nodes" ];then
-		cmd="scp rundb ${USERNAME}@${line}:${home_directory}/resilientdb/"
+		cmd="scp rundb invoker invoker_config.json ${USERNAME}@${line}:${home_directory}/resilientdb/"
 	else
-		cmd="scp runcl ${USERNAME}@${line}:${home_directory}/resilientdb/"
+		cmd="scp runcl v_recv ${USERNAME}@${line}:${home_directory}/resilientdb/"
 	fi
 
 	monitor="scp monitorResults.sh ${USERNAME}@${line}:${home_directory}/resilientdb/"
@@ -22,7 +27,7 @@ do
 		$($if_cmd) &
 	fi
 	$($monitor) &
-	# echo "$cmd"
+	echo "$cmd"
 	$($cmd) &
 	i=$(($i+1))
 done < "$input"

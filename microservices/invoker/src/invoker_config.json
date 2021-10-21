@@ -1,0 +1,21 @@
+{
+    "f": 1,
+    "thresholdOn": false,
+    "threshold": 10,
+    "service": "aws",
+    "fcnRegion": "us-west-1",
+    "fcnName": "secure_executor",
+    "uuids": [
+        "3e81f246-3693-11eb-adc1-0242ac120002",
+        "a1ffc780-3693-11eb-adc1-0242ac120002",
+        "b34ef722-3693-11eb-adc1-0242ac120002",
+        "c7416990-3693-11eb-adc1-0242ac120002",
+        "8408a04c-f4f8-43e0-bd9a-9e835de634ae",
+        "94b1fccf-79ae-4bbe-9366-5978cc430891",
+        "ce06c8ba-ef8f-4060-996e-df13bed9379c",
+        "2be5a4ba-1d08-406e-8ff9-c354424a9b87",
+        "f46e7878-eb47-4e78-b497-3d133c2adc24",
+        "d73c58d2-0cb7-4414-a19a-13f43ad8e7aa",
+        "329fbdb3-7f28-4279-af9c-226d3ac4c743"
+    ]
+}

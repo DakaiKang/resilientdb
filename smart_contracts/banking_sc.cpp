@@ -23,6 +23,13 @@ uint64_t TransferMoneySmartContract::execute()
     return 0;
 }
 
+
+string TransferMoneySmartContract::get_contract() { 
+  //printf("getting TransferMoneySmartContract\n");
+  //fflush(stdout);
+  return "";
+}
+
 /*
 returns:
      1 for commit 
@@ -33,6 +40,11 @@ uint64_t DepositMoneySmartContract::execute()
     uint64_t dest = temp.empty() ? 0 : stoi(temp);
     db->Put(std::to_string(this->dest_id), std::to_string(dest + amount));
     return 1;
+}
+
+string DepositMoneySmartContract::get_contract() {
+  // Only support for DepositMoney for testing purposes:
+  return "{\"dest\":\"" + to_string(this->dest_id) + "\",\"amt\":\"" + to_string(amount) +"\"}";
 }
 
 /*
@@ -52,6 +64,12 @@ uint64_t WithdrawMoneySmartContract::execute()
     return 0;
 }
 
+string WithdrawMoneySmartContract::get_contract() { 
+  //printf("getting WithdrawMoneySmartContract\n");
+  //fflush(stdout);
+  return "";
+}
+
 /*
 Smartt Contract Transaction Manager and Workload
 */
@@ -66,6 +84,34 @@ void SmartContractTxn::init(uint64_t thd_id, Workload *h_wl)
 void SmartContractTxn::reset()
 {
     TxnManager::reset();
+}
+
+string SmartContract::get_contract() {
+  string contract;
+  switch (this->type) {
+    case BSC_TRANSFER:
+      {
+        TransferMoneySmartContract* tm = (TransferMoneySmartContract*)this;
+        contract = tm->get_contract();
+        break;
+      }
+    case BSC_DEPOSIT:
+      {
+        DepositMoneySmartContract* dm = (DepositMoneySmartContract*)this;
+        contract = dm->get_contract();
+        break;
+      }
+    case BSC_WITHDRAW:
+      {
+        WithdrawMoneySmartContract* wm = (WithdrawMoneySmartContract*)this;
+        contract = wm->get_contract();
+        break;
+      }
+    default:
+      assert(0);
+      break;
+  }
+  return contract;
 }
 
 RC SmartContractTxn::run_txn()

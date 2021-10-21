@@ -14,7 +14,7 @@
 #define CORE_CNT 8
 #define PART_CNT 1
 // Specify the number of clients.
-#define CLIENT_NODE_CNT 1
+#define CLIENT_NODE_CNT 2
 #define CLIENT_THREAD_CNT 2
 #define CLIENT_REM_THREAD_CNT 1
 #define CLIENT_SEND_THREAD_CNT 1
@@ -134,7 +134,7 @@
 #define REPLICATED 1
 // To select the amount of time to warmup and run.
 #define DONE_TIMER 1 * 60 * BILLION
-#define WARMUP_TIMER  5 * BILLION
+#define WARMUP_TIMER  20 * BILLION
 // Select the consensus algorithm to run.
 #define CONSENSUS PBFT
 #define PBFT 2

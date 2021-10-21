@@ -89,6 +89,8 @@ public:
     Thread *h_thd;
     Workload *h_wl;
 
+    vector<string> results;
+    virtual string get_contract() = 0;
     virtual RC run_txn() = 0;
     void register_thread(Thread *h_thd);
     uint64_t get_thd_id();

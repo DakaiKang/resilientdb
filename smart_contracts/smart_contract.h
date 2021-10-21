@@ -21,6 +21,7 @@ public:
     uint64_t source_id;
     uint64_t dest_id;
     uint64_t amount;
+    string get_contract();
     uint64_t execute();
 };
 
@@ -33,6 +34,7 @@ class DepositMoneySmartContract : public SmartContract
 public:
     uint64_t dest_id;
     uint64_t amount;
+    string get_contract();
     uint64_t execute();
 };
 
@@ -45,6 +47,7 @@ class WithdrawMoneySmartContract : public SmartContract
 public:
     uint64_t source_id;
     uint64_t amount;
+    string get_contract();
     uint64_t execute();
 };
 

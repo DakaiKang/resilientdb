@@ -4,6 +4,7 @@ home_directory="/home/ubuntu"
 nodes=$1
 name=$2
 result_dir=$3
+verifier_ip=$4
 input="./ifconfig.txt"
 i=0
 while IFS= read -r line
@@ -23,3 +24,5 @@ do
 	i=$(($i+1))
 done < "$input"
 wait
+
+scp $verifier_ip:~/vdb/*_v.out ${result_dir}

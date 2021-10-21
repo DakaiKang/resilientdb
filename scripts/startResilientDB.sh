@@ -18,10 +18,10 @@ SNODES=(
 	"10.0.0.46"
 	"10.0.0.193"
 	"10.0.0.100"
-	"10.0.0.169"
-	"10.0.0.223"
-	"10.0.0.87"
-	"10.0.0.90"
+	# "10.0.0.169"
+	# "10.0.0.223"
+	# "10.0.0.87"
+	# "10.0.0.90"
 	# "10.0.0.20"
 	# "10.0.0.192"
 	# "10.0.0.19"
@@ -37,12 +37,12 @@ CNODES=(
 	# "10.0.0.46"
 	# "10.0.0.193"
 	# "10.0.0.100"
-	# "10.0.0.169"
-	# "10.0.0.223"
+	"10.0.0.169"
+	"10.0.0.223"
 	# "10.0.0.87"
 	# "10.0.0.90"
-	"10.0.0.20"
-	"10.0.0.192"
+	# "10.0.0.20"
+	# "10.0.0.192"
 	# "10.0.0.19"
 	# "10.0.0.226"
 	# "10.0.0.218"
@@ -104,6 +104,11 @@ tm=0
 
 # Copy to scripts
 cp run* scripts/
+cp microservices/vmcs/src/v_recv scripts/
+cp microservices/invoker/src/invoker scripts/
+cp microservices/invoker/src/invoker_config.json scripts/
+cp verifier/src/verifier scripts/
+cp verifier/verifier_config.json scripts/
 cp ifconfig.txt scripts/
 cp config.h scripts/
 cp hostnames.py scripts/
