@@ -1034,8 +1034,10 @@ uint64_t VerifierResponseMessage::get_size()
 	uint64_t sz = Message::mget_size();
 	// account for num_writes
 	sz += sizeof(uint64_t);
-	// sequence number // TODO remove
-	sz += sizeof(uint64_t); // TODO remove
+	// client TS
+	sz += sizeof(uint64_t); 
+	// sequence number 
+	sz += sizeof(uint64_t); 
 	return sz;
 }
 
@@ -1055,6 +1057,7 @@ void VerifierResponseMessage::copy_from_buf(char *buf)
    */
 	uint64_t ptr = 0;
 	COPY_VAL(num_writes, buf, ptr);
+	COPY_VAL(client_ts, buf, ptr);
 	COPY_VAL(seq_number, buf, ptr);
 	ptr += Message::mget_size();
 	assert(ptr == get_size());

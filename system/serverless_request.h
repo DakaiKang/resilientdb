@@ -12,8 +12,10 @@ class ServerlessRequest {
     string contracts;
     string certificate;
     string client_id;
+    string client_ts;
     void set_seqnum(uint64_t seqn_num);
     void set_client_id(uint64_t clnt_id);
+    void set_client_ts(uint64_t clnt_ts);
     void set_contracts(string contract_set);
     void set_certificate(vector<PBFTCommitMessage*>* commit_msgs);
     string create_request();
@@ -25,6 +27,7 @@ class ServerlessRequest {
     string create_cryptomethod_field(string data);
     string create_seqnum_field(string seqn_num);
     string create_client_id_field(string clnt_id);
+    string create_client_ts_field(string clnt_ts);
     string create_contracts_field(string contract_set);
     string create_certificate_field(string certificate_set);
 };

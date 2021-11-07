@@ -16,12 +16,13 @@ import (
 
 type VerifierMsg struct {
 	SeqNum    uint64 `json:"sequenceNumber"`
+	ClientTs  uint64 `json:"clientTs"`
 	NumWrites uint64 `json:"numWrites"`
 }
 
 // Used for debugging:
 func (v *VerifierMsg) toString() string {
-	return fmt.Sprintf("SeqNum: %d :: NumWrites: %d", v.SeqNum, v.NumWrites)
+	return fmt.Sprintf("SeqNum: %d :: NumWrites: %d :: ClientTs: %d", v.SeqNum, v.NumWrites, v.ClientTs)
 }
 
 func handleSig(sts *stats.Stats) {
@@ -64,15 +65,19 @@ func collectMessages(vURL string, rURL string, topic string, writeCntChan chan u
 		json.Unmarshal(splitMsg[1], &vMsg)
 
 		// Send to runcl:
-		nwBytes := make([]byte, 8)
-		snBytes := make([]byte, 8)
-		binary.LittleEndian.PutUint64(nwBytes, vMsg.NumWrites)
-		binary.LittleEndian.PutUint64(snBytes, vMsg.SeqNum)
-		serr := transport.Send(pairSock, append(nwBytes, snBytes...))
+		tempBytes := make([]byte, 8)
+		toSend := make([]byte, 0)
+		binary.LittleEndian.PutUint64(tempBytes, vMsg.NumWrites)
+		toSend = append(toSend, tempBytes...)
+		binary.LittleEndian.PutUint64(tempBytes, vMsg.ClientTs)
+		toSend = append(toSend, tempBytes...)
+		binary.LittleEndian.PutUint64(tempBytes, vMsg.SeqNum)
+		toSend = append(toSend, tempBytes...)
+		serr := transport.Send(pairSock, toSend)
 		if serr != nil {
 			log.Printf("%s\n", serr.Error())
 		}
-		// fmt.Print(vMsg.toString() + "    " + string(splitMsg[0]) + "\n") // debug
+		// fmt.Print(vMsg.toString() + "\n") // debug
 
 		writeCntChan <- vMsg.NumWrites
 		/* record the reception of a verifier response message:

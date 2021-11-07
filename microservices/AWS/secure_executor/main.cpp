@@ -118,6 +118,7 @@ bool isWellFormedWriteRequest(Aws::Utils::Json::JsonView *requestView)
 {
     return requestView->ValueExists("contracts") &&
            requestView->ValueExists("sequenceNumber") &&
+           requestView->ValueExists("clientTs") &&
            requestView->ValueExists("uuid");
 }
 
@@ -147,7 +148,7 @@ void sendWriteToVerifier(std::string jsonString, Aws::Utils::Json::JsonValue *re
     {
         text += r.error.message;
     }
-    (*response).WithInteger("veriferStatusCode", r.status_code).WithString("verifierResponse", text);
+    (*response).WithInteger("veriferStatusCode", r.status_code).WithString("verifierResponse", text);//.WithString("verifier_data", jsonString)
 }
 
 void sendReadToVerifier(std::string jsonString, Aws::Utils::Json::JsonValue *response)

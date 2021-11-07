@@ -188,7 +188,11 @@ RC InputThread::client_recv_loop()
 				 */
                 INC_STATS(get_thd_id(), txn_cnt, 1);
                 inf = client_man.dec_inflight(return_node_offset);
+                uint64_t timespan = get_sys_clock() - vmsg->client_ts;
+                sumlat = sumlat + timespan;
+                INC_STATS(get_thd_id(), txn_run_time, timespan);
                 txncmplt++;
+                
             }
 
             assert(inf >= 0);

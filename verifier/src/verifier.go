@@ -67,6 +67,7 @@ type WriteReq struct {
 	WriteSet        map[string]string `json:"contracts"`
 	Uuid            string            `json:"uuid"`
 	Topic           string            `json:"clientId"`
+	ClientTs        string            `json:"clientTs"`
 }
 
 type WriteReqData struct {
@@ -233,7 +234,7 @@ func (wh *WriteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if wh.rm.VerifyWrite(ws) {
 		wh.verifiedCntChan <- 1
-		vMsg := fmt.Sprintf("%s|{\"sequenceNumber\":%s,\"numWrites\":%s}", ws.Topic, ws.SeqNum, strconv.Itoa(len(ws.WriteSet)))
+		vMsg := fmt.Sprintf("%s|{\"sequenceNumber\":%s,\"clientTs\":%s,\"numWrites\":%s}", ws.Topic, ws.SeqNum, ws.ClientTs, strconv.Itoa(len(ws.WriteSet)))
 		clientMsgChan <- vMsg
 		seq_number, _ := strconv.Atoi(ws.SeqNum)
 		verified_channel <- seq_number

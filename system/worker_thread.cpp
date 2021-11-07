@@ -971,6 +971,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
 #if SERVERLESS
     serverless_request.set_client_id(txn_man->client_id);
+    serverless_request.set_client_ts(txn_man->client_startts);
 #endif
 
 #if ENABLE_CHAIN

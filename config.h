@@ -14,7 +14,7 @@
 #define CORE_CNT 8
 #define PART_CNT 1
 // Specify the number of clients.
-#define CLIENT_NODE_CNT 2
+#define CLIENT_NODE_CNT 1
 #define CLIENT_THREAD_CNT 2
 #define CLIENT_REM_THREAD_CNT 1
 #define CLIENT_SEND_THREAD_CNT 1

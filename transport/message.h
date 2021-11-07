@@ -155,6 +155,7 @@ public:
     void init() {}
     void release() {}
     uint64_t num_writes;
+    uint64_t client_ts;
     uint64_t seq_number; // TODO remove
 };
 #endif

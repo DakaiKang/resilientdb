@@ -49,6 +49,11 @@ string ServerlessRequest::create_client_id_field(string clnt_id) {
   return client_id_field;
 }
 
+string ServerlessRequest::create_client_ts_field(string clnt_ts) {
+  string client_ts_field = "\"clientTs\":\"" + clnt_ts + "\"";
+  return client_ts_field;
+}
+
 string ServerlessRequest::create_contracts_field(string contract_set) {
   string contracts_field = "\"contracts\":{" + contract_set + "}";
   return contracts_field;
@@ -65,6 +70,10 @@ void ServerlessRequest::set_seqnum(uint64_t seqn_num) {
 
 void ServerlessRequest::set_client_id(uint64_t clnt_id) {
   client_id = to_string(clnt_id);
+}
+
+void ServerlessRequest::set_client_ts(uint64_t clnt_ts) {
+  client_ts = to_string(clnt_ts);
 }
 
 void ServerlessRequest::set_contracts(string contract_set) {
@@ -89,6 +98,7 @@ void ServerlessRequest::set_certificate(vector<PBFTCommitMessage*>* commit_msgs)
 string ServerlessRequest::create_request() {
   string seqnnum_field = create_seqnum_field(sequence_number);
   string client_id_field = create_client_id_field(client_id);
+  string client_ts_field = create_client_ts_field(client_ts);
   string contracts_field = create_contracts_field(contracts);
   string cryptomethod_field = create_cryptomethod_field("CMAC");
   string certificate_field = create_certificate_field(certificate);
@@ -99,6 +109,7 @@ string ServerlessRequest::create_request() {
 #endif
   string request = "{" + seqnnum_field + "," +
                     client_id_field + "," +
+                    client_ts_field + "," +
                     contracts_field + "," +
                     cryptomethod_field + "," +
                     meta + "," +

@@ -54,6 +54,8 @@ os.system(cmd)
 # if run == 0:
 os.system("./scp_binaries.sh {} {} {}".format(nds, 1 if send_ifconfig else 0, verifier_ip))
 
+# '''
+
 # if dashboard is not None:
 #     hostname = socket.gethostname()
 #     IPAddr = socket.gethostbyname(hostname)
@@ -81,3 +83,6 @@ os.system(cmd)
 
 # # collecting the output
 os.system("./scp_results.sh {} {} {} {}".format(nds, resfile, result_dir, verifier_ip))
+
+
+# '''
