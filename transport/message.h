@@ -3,8 +3,11 @@
 
 #include "global.h"
 #include "array.h"
-#include <bits/stdint-uintn.h>
 #include <mutex>
+
+#if SERVERLESS
+#include <bits/stdint-uintn.h>
+#endif
 
 class ycsb_request;
 class LogRecord;
@@ -140,9 +143,10 @@ public:
     uint64_t batch_id;
 };
 
+#if SERVERLESS
 class VerifierResponseMessage : public Message
 {
-  public:
+public:
     void copy_from_buf(char *buf);
     void copy_to_buf(char *buf);
     void copy_from_txn(TxnManager *txn);
@@ -151,7 +155,9 @@ class VerifierResponseMessage : public Message
     void init() {}
     void release() {}
     uint64_t num_writes;
+    uint64_t seq_number; // TODO remove
 };
+#endif
 
 class ClientQueryMessage : public Message
 {
@@ -405,8 +411,6 @@ public:
     uint64_t batch_size;
 };
 
-
-
 class ExecuteMessage : public Message
 {
 public:
@@ -427,9 +431,10 @@ public:
     uint64_t end_index;
     uint64_t batch_size;
 
+#if SERVERLESS
     uint64_t num_commit_msgs;
     vector<PBFTCommitMessage *> commit_msgs;
-
+#endif
 };
 
 /****************************************/

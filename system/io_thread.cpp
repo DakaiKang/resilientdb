@@ -12,7 +12,11 @@
 #include "client_txn.h"
 #include "work_queue.h"
 #include "timer.h"
+
+#if SERVERLESS
 #include "microservice_manager.h"
+#endif
+
 //#include "crypto.h"
 
 void InputThread::managekey(KeyExchange *keyex)
@@ -139,8 +143,10 @@ RC InputThread::run()
 RC InputThread::client_recv_loop()
 {
 
+#if SERVERLESS
     MicroServiceManager *ms_man = new MicroServiceManager();
     ms_man->init("verifier");
+#endif
 
     run_starttime = get_sys_clock();
     uint64_t return_node_offset;
@@ -152,15 +158,20 @@ RC InputThread::client_recv_loop()
 
     double sumlat = 0;
     uint64_t txncmplt = 0;
+
+#if SERVERLESS
     uint64_t verifier_txncmplt = 0;
     uint64_t recv_cnt = 0;
 
     //uint64_t g = 5;
     //uint64_t execs_per_req = 2 * g + 1;
+#endif
 
     while (!simulation->is_done())
     {
         heartbeat();
+
+#if SERVERLESS
         return_node_offset = get_view(get_thd_id());
         VerifierResponseMessage *vmsg = ms_man->request_vmsg();
         if (vmsg)
@@ -182,9 +193,10 @@ RC InputThread::client_recv_loop()
 
             assert(inf >= 0);
             //}
-
+            // cout << return_node_offset << "  inf "  << inf  << "   " << vmsg->seq_number << endl;
             Message::release_message(vmsg);
         }
+#endif
 
         msgs = tport_man.recv_msg(get_thd_id());
         if (msgs == NULL)
@@ -280,8 +292,8 @@ RC InputThread::client_recv_loop()
                 // End the timer.
                 client_timer->endTimer(clrsp->client_ts[get_batch_size() - 1]);
 #endif
-                cout << "validated: " << clrsp->txn_id << "   " << clrsp->return_node_id << "\n";
-                fflush(stdout);
+                // cout << "validated: " << clrsp->txn_id << "   " << clrsp->return_node_id << "\n";
+                // fflush(stdout);
 
 #if VIEW_CHANGES
                 //cout << "View: " << clrsp->view << "\n";
@@ -330,10 +342,11 @@ RC InputThread::client_recv_loop()
                 }
 
                 sumlat = sumlat + timespan;
-                //txncmplt++;
+#if !SERVERLESS
+                txncmplt++;
 
-                //inf = client_man.dec_inflight(return_node_offset);
-
+                inf = client_man.dec_inflight(return_node_offset);
+#endif
 #endif // CLIENT_RESPONSE_BATCH
                 assert(inf >= 0);
             }
@@ -343,7 +356,7 @@ RC InputThread::client_recv_loop()
         }
         delete msgs;
     }
-
+#if SERVERLESS
     printf("AVG: %f\n", (sumlat / (txncmplt * BILLION)));
     fflush(stdout);
     printf("TXNCOMP_CONSENSUS: %ld\n", txncmplt);
@@ -352,6 +365,10 @@ RC InputThread::client_recv_loop()
     fflush(stdout);
     printf("RECV_CNT: %ld\n", recv_cnt);
     fflush(stdout);
+#else
+    printf("AVG Latency: %f\n", (sumlat / (txncmplt * BILLION)));
+    printf("TXN_CNT: %ld\n", txncmplt);
+#endif
 
     printf("FINISH %ld:%ld\n", _node_id, _thd_id);
     fflush(stdout);

@@ -14,7 +14,7 @@ home_directory = "/home/ubuntu"
 PATH = os.getcwd()
 #result_dir = PATH + "/results/"
 result_dir = home_directory+"/resilientdb/results/"
-verifier_ip="10.0.0.246"
+verifier_ip="129.159.37.193"
 
 # Total nodes
 nds = int(argv[1])
@@ -24,8 +24,8 @@ send_ifconfig = True
 
 #cmd = "mkdir -p {}".format(result_dir)
 # os.system(cmd)
-cmd = "cp config.h {}".format(result_dir)
-os.system(cmd)
+# os.system("cp config.h {}".format(result_dir))
+os.system("cp config.h {}".format(result_dir + "config_" + resfile))
 
 
 machines = hostip
@@ -42,6 +42,9 @@ cmd = './vcloud_cmd.sh \"{}\" \"pkill -f \'invoker\'\"'.format(' '.join(machines
 print(cmd)
 os.system(cmd)
 cmd = './vcloud_cmd.sh \"{}\" \"pkill -f \'v_recv\'\"'.format(' '.join(machines))
+print(cmd)
+os.system(cmd)
+cmd = './vcloud_cmd.sh \"{}\" \"sudo pkill -f \'verifier\'\"'.format(verifier_ip)
 print(cmd)
 os.system(cmd)
 
@@ -67,9 +70,9 @@ os.system("./scp_binaries.sh {} {} {}".format(nds, 1 if send_ifconfig else 0, ve
 #     os.system(cmd_monitor)
 
 # # running the experiment
-# cmd = './vcloud_deploy.sh \"{}\" {} \"{}\" {}'.format(' '.join(machines), nds, resfile, verifier_ip)
-# print(cmd)
-# os.system(cmd)
+cmd = './vcloud_deploy.sh \"{}\" {} \"{}\" {}'.format(' '.join(machines), nds, resfile, verifier_ip)
+print(cmd)
+os.system(cmd)
 
 # if dashboard is not None:
 #     # check if monitorResults.sh processes are killed
@@ -77,5 +80,4 @@ os.system("./scp_binaries.sh {} {} {}".format(nds, 1 if send_ifconfig else 0, ve
 #         './vcloud_cmd.sh \"{}\" \"pkill -f \'sh monitorResults.sh\'\"'.format(' '.join(machines)))
 
 # # collecting the output
-# os.system("./scp_results.sh {} {} {} {}".format(nds, resfile, result_dir, verifier_ip))
-# os.system("cp config.h {}".format(result_dir + "config_" + resfile))
+os.system("./scp_results.sh {} {} {} {}".format(nds, resfile, result_dir, verifier_ip))

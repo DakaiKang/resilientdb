@@ -65,8 +65,10 @@ func collectMessages(vURL string, rURL string, topic string, writeCntChan chan u
 
 		// Send to runcl:
 		nwBytes := make([]byte, 8)
+		snBytes := make([]byte, 8)
 		binary.LittleEndian.PutUint64(nwBytes, vMsg.NumWrites)
-		serr := transport.Send(pairSock, nwBytes)
+		binary.LittleEndian.PutUint64(snBytes, vMsg.SeqNum)
+		serr := transport.Send(pairSock, append(nwBytes, snBytes...))
 		if serr != nil {
 			log.Printf("%s\n", serr.Error())
 		}

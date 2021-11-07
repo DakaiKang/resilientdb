@@ -8,6 +8,8 @@
 #include <nng/nng.h>
 #include <nng/protocol/pair0/pair.h>
 
+#if SERVERLESS
+
 void MicroServiceManager::init(string service_name) {
   string path_name = "/tmp/" + service_name;
   addr = "ipc://" + path_name;
@@ -67,3 +69,5 @@ VerifierResponseMessage* MicroServiceManager::request_vmsg() {
   //handle_error("nng_recv :: request_vmsg", rv);
   return NULL;
 }
+
+#endif // serverless

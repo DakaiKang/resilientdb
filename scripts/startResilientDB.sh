@@ -14,10 +14,27 @@ if [ -z $bsize ]; then
 fi
 
 SNODES=(
-	"10.0.0.96"
-	"10.0.0.46"
-	"10.0.0.193"
-	"10.0.0.100"
+	"10.0.0.38"
+	"10.0.0.157"
+	"10.0.0.145"
+	"10.0.0.80"
+	# "10.0.0.220"
+	# "10.0.0.134"
+	# "10.0.0.200"
+	# "10.0.0.78"
+	# "10.0.0.165"
+	# "10.0.0.29"
+	# "10.0.0.175"
+	# "10.0.0.2"
+	# "10.0.0.27"
+	# "10.0.0.201"
+	# "10.0.0.71"
+	# "10.0.0.212"
+
+	# "10.0.0.96"
+	# "10.0.0.46"
+	# "10.0.0.193"
+	# "10.0.0.100"
 	# "10.0.0.169"
 	# "10.0.0.223"
 	# "10.0.0.87"
@@ -33,12 +50,12 @@ SNODES=(
 )
 
 CNODES=(
-	# "10.0.0.96"
-	# "10.0.0.46"
+	"10.0.0.96"
+	"10.0.0.46"
 	# "10.0.0.193"
 	# "10.0.0.100"
-	"10.0.0.169"
-	"10.0.0.223"
+	# "10.0.0.169"
+	# "10.0.0.223"
 	# "10.0.0.87"
 	# "10.0.0.90"
 	# "10.0.0.20"
@@ -104,9 +121,9 @@ tm=0
 
 # Copy to scripts
 cp run* scripts/
-cp microservices/vmcs/src/v_recv scripts/
-cp microservices/invoker/src/invoker scripts/
-cp microservices/invoker/src/invoker_config.json scripts/
+cp microservices/vmcs/v_recv scripts/
+cp microservices/invoker/invoker scripts/
+cp microservices/invoker/invoker_config.json scripts/
 cp verifier/src/verifier scripts/
 cp verifier/verifier_config.json scripts/
 cp ifconfig.txt scripts/

@@ -25,6 +25,37 @@ import (
 
 var clientMsgChan = make(chan string)
 
+var verified_map = make(map[int]bool)
+var last_verified int = 0
+var verified_channel = make(chan int)
+
+func checkNext(c <-chan int) {
+	for seq := range c {
+		last_verified++
+		verified_map[seq] = true
+		for verified_map[last_verified] {
+			last_verified++
+			fmt.Printf("last verified:  ;%d;    map_size:  %d\n", last_verified-1, len(verified_map))
+		}
+	}
+
+}
+
+/*
+func checkNext(c <-chan string) {
+	for seq := range c {
+		last_verified++
+		fmt.Printf("last verified:  ;%d;  %s\n", last_verified-1, seq)
+		// 	verified_map[seq] = true
+		// 	for verified_map[last_verified] {
+		// 		last_verified++
+		// 		fmt.Printf("last verified:  ;%d;    map_size:  %d\n", last_verified-1, len(verified_map))
+		// 	}
+	}
+
+}
+*/
+
 type ReadReq struct {
 	SeqNum  string   `json:"sequenceNumber"`
 	ReadSet []string `json:"readSet"`
@@ -131,48 +162,25 @@ func getHash(wreq *WriteReq) string {
 func (rm *RequestMap) VerifyWrite(wreq WriteReq) bool {
 	hash := getHash(&wreq)
 	// fmt.Printf("hash: %s\n", hash)
-	if val, exists := rm.SeqNumMap.Get(hash); exists {
-		var writes WriteReqData = val.(WriteReqData)
-		// fmt.Printf("for wreq: %s we got: %v\n", wreq.SeqNum, writes)
-		for _, uuid := range writes.Uuids {
-			if wreq.Uuid == uuid {
-				return false
-			}
-		}
-		// Found matching write:
-		cb := func(key string, val interface{}, exists bool) bool {
-			if exists {
-				writes := val.(WriteReqData)
-				return writes.numRecvd == rm.f
-			}
-			return false
-		}
-		if rm.SeqNumMap.RemoveCb(hash, cb) {
-			// f + 1th write obtained:
-			// fmt.Printf("seqnum %s has been verified.\n", wreq.SeqNum) // debug
-			return true
-		} else {
-			upsert := func(exist bool, valueInMap interface{}, newValue interface{}) interface{} {
-				nv := newValue.(WriteReqData)
-				if exist {
-					v := valueInMap.(WriteReqData)
-					v.numRecvd += 1
-					v.Uuids = append(v.Uuids, nv.Uuids...)
-					return v
-				}
-				return nv
-			}
-			// otherwise we record that we have a matching write:
-			wd := WriteReqData{Uuids: []string{wreq.Uuid}, numRecvd: 1}
-			rm.SeqNumMap.Upsert(hash, wd, upsert)
-		}
 
-	} else {
-		// Create writes slice
-		// fmt.Printf("creating entry for:%s\n", wreq.SeqNum)
-		wd := WriteReqData{Uuids: []string{wreq.Uuid}, numRecvd: 1}
-		rm.SeqNumMap.Set(hash, wd)
+	upsert := func(exist bool, valueInMap interface{}, newValue interface{}) interface{} {
+		nv := newValue.(WriteReqData)
+		if exist {
+			v := valueInMap.(WriteReqData)
+			v.numRecvd += 1
+			// v.Uuids = append(v.Uuids, nv.Uuids...)
+			return v
+		}
+		return nv
 	}
+	// otherwise we record that we have a matching write:
+	wd := WriteReqData{numRecvd: 1}
+	updated_wd := rm.SeqNumMap.Upsert(hash, wd, upsert).(WriteReqData)
+	if updated_wd.numRecvd == rm.f {
+		return true
+	}
+	// fmt.Printf("seqnum ;%s; has been updated to %d.\n", wreq.SeqNum, updated_wd.numRecvd) // debug
+
 	return false
 }
 
@@ -208,44 +216,50 @@ func (wh *WriteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&ws)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		fmt.Print(err.Error())
+		os.Exit(0)
 		return
 	}
-
-	// Just notify the client
-	/*
-	  vMsg := fmt.Sprintf("%s|{\"sequenceNumber\":%s,\"numWrites\":%s}", ws.Topic, ws.SeqNum, strconv.Itoa(len(ws.WriteSet)))
-	  clientMsgChan <- vMsg
-	  fmt.Fprintf(w, "Message Passed")
-	*/
 
 	// fmt.Printf("recvd wreq: %v\n with batch sz: %d\n", ws, len(ws.WriteSet))
 
-	if !wh.VerifyReadSnapshot(ws.ReadSetSnapshot) {
-		fmt.Fprintf(w, "ReadSet Snapshot Invalid")
-		return
-	}
+	// TODO STORAGE
+
+	// if !wh.VerifyReadSnapshot(ws.ReadSetSnapshot) {
+	// 	fmt.Fprintf(w, "ReadSet Snapshot Invalid")
+	// 	return
+	// }
 
 	if wh.rm.VerifyWrite(ws) {
 		wh.verifiedCntChan <- 1
 		vMsg := fmt.Sprintf("%s|{\"sequenceNumber\":%s,\"numWrites\":%s}", ws.Topic, ws.SeqNum, strconv.Itoa(len(ws.WriteSet)))
 		clientMsgChan <- vMsg
-		for key, val := range ws.WriteSet {
-			stmt := `INSERT INTO accounts (id, balance) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET balance=$2`
-			_, err = wh.db.Exec(stmt, key, val)
-			if err != nil {
-				fmt.Fprintf(w, "Write Error, %v", err)
-				return
-			}
-			wh.writeCntChan <- 1
-		}
-		fmt.Fprintf(w, "Write Succeed")
-	} else {
-		fmt.Fprintf(w, "Write not validated")
+		seq_number, _ := strconv.Atoi(ws.SeqNum)
+		verified_channel <- seq_number
+		// fmt.Printf("seqnum %s has been verified.\n", ws.SeqNum) // debug
+		// for key, val := range ws.WriteSet {
+		// 	stmt := `INSERT INTO accounts (id, balance) VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET balance=$2`
+		// 	_, err = wh.db.Exec(stmt, key, val)
+		// 	if err != nil {
+		// 		fmt.Fprintf(w, "Write Error, %v", err)
+		// 		return
+		// 	}
+		// 	wh.writeCntChan <- 1
+		// }
+		// fmt.Fprintf(w, "Write Succeed")
 	}
+	fmt.Fprintf(w, "%s", "ok")
+	r.Body.Close()
+	// else {
+	// 	fmt.Fprintf(w, "Write not validated")
+	// }
+
 }
 
 // Service Read Request:
 func (rh *ReadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 	rh.recvCntChan <- 1
 	rh.logTimeChan <- time.Now()
 	var rs ReadReq
@@ -327,6 +341,7 @@ func main() {
 	simtime := dur * 1000000000 * time.Nanosecond
 	go runTimer(time.Now().UnixNano(), simtime, db, &sts)
 
+	go checkNext(verified_channel)
 	// Use goroutines that check for a channel and accept changes through those channels:
 	//go runPublisher(clientMsgChan, "tcp://172.31.10.42:4000")
 	go runPublisher(clientMsgChan, "tcp://"+conf.Vip+":4000")

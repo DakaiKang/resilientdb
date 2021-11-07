@@ -21,6 +21,7 @@
 #define CLIENT_RUNTIME false
 
 #define MESSAGE_PER_BUFFER 24
+#define SERVERLESS true
 
 // GeoBFT Setting 
 #define GBFT false
@@ -39,7 +40,7 @@
 #define WORKLOAD YCSB
 #define PRT_LAT_DISTR false
 #define STATS_ENABLE true
-#define STATS_DETAILED false
+#define STATS_DETAILED true
 #define STAT_BAND_WIDTH_ENABLE false
 #define TIME_ENABLE true
 #define TIME_PROF_ENABLE false
@@ -134,7 +135,7 @@
 #define REPLICATED 1
 // To select the amount of time to warmup and run.
 #define DONE_TIMER 1 * 60 * BILLION
-#define WARMUP_TIMER  20 * BILLION
+#define WARMUP_TIMER  10 * BILLION
 // Select the consensus algorithm to run.
 #define CONSENSUS PBFT
 #define PBFT 2

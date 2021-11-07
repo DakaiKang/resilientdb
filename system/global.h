@@ -213,10 +213,12 @@ enum RemReqType
 #if GBFT
     GBFT_COMMIT_CERTIFICATE_MSG,
 #endif
+#if SERVERLESS
+    V_RESP,
+#endif
     PBFT_PREP_MSG,   // Prepare
     PBFT_COMMIT_MSG, // Commit
     PBFT_CHKPT_MSG,   // Checkpoint and Garbage Collection
-    V_RESP
 };
 
 /* Thread */

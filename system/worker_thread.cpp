@@ -13,8 +13,11 @@
 #include "message.h"
 #include "timer.h"
 #include "chain.h"
+
+#if SERVERLESS
 #include "microservice_manager.h"
 #include "serverless_request.h"
+#endif
 
 void WorkerThread::send_key()
 {
@@ -699,15 +702,19 @@ RC WorkerThread::run()
 
         INC_STATS(get_thd_id(), worker_release_msg_time, get_sys_clock() - ready_starttime);
     }
-    if (ms_man != NULL) {
-      ms_man->send_msg("END");
-      printf("NUM INVOKER CALLS: %lu\nNUM_TXNS: %lu\n", num_invoker_calls, num_txns_handled);
-      fflush(stdout);
-      delete ms_man;
+#if SERVERLESS
+    if (ms_man != NULL)
+    {
+        ms_man->send_msg("END");
+        printf("NUM INVOKER CALLS: %lu\nNUM_TXNS: %lu\n", num_invoker_calls, num_txns_handled);
+        fflush(stdout);
+        delete ms_man;
     }
+#else
     //printf("FINISH: %ld\n", agCount);
     //fflush(stdout);
 
+#endif
     return FINISH;
 }
 
@@ -823,16 +830,18 @@ RC WorkerThread::process_execute_msg(Message *msg)
     // }
 
     uint64_t ctime = get_sys_clock();
-
+#if SERVERLESS
     // initialize microservice manager, if it hasn't been initialized already:
-    if (ms_man == NULL && view_to_primary(get_current_view(get_thd_id())) == g_node_id) {
-      ms_man = new MicroServiceManager();
-      ms_man->init("invoker");
+    if (ms_man == NULL && view_to_primary(get_current_view(get_thd_id())) == g_node_id)
+    {
+        ms_man = new MicroServiceManager();
+        ms_man->init("invoker");
     }
 
     ServerlessRequest serverless_request;
     serverless_request.set_seqnum(batch_seqn);
 
+#endif
     // This message uses txn man of index calling process_execute.
 #if GBFT
 
@@ -845,14 +854,15 @@ RC WorkerThread::process_execute_msg(Message *msg)
         crsp = (ClientResponseMessage *)rsp;
         crsp->init();
     }
-#else
-    // Message *rsp = Message::create_message(CL_RSP);
-    // ClientResponseMessage *crsp = (ClientResponseMessage *)rsp;
-    // crsp->init();
+#elif !SERVERLESS
+    Message *rsp = Message::create_message(CL_RSP);
+    ClientResponseMessage *crsp = (ClientResponseMessage *)rsp;
+    crsp->init();
 #endif
 
     ExecuteMessage *emsg = (ExecuteMessage *)msg;
 
+#if SERVERLESS
     // Not sure if strictly necessary. Just check to make sure that emsg contains commit messages:
     assert(emsg->num_commit_msgs != 0);
     //cout << "num commit_msgs = " << emsg->commit_msgs.size() << "\n";
@@ -861,6 +871,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
     serverless_request.set_certificate(cm_ptr);
 
     string contract_set;
+#endif
 
     // Execute transactions in a shot
     uint64_t i;
@@ -872,15 +883,19 @@ RC WorkerThread::process_execute_msg(Message *msg)
         TxnManager *tman = get_transaction_manager(i, 0);
 
         inc_next_index();
-
+#if !SERVERLESS
         // Execute the transaction
-        //tman->run_txn();
+        tman->run_txn();
+#else
         // Only the primary should bother with obtaining the certificate.
-        if (g_node_id == emsg->view) {
-          contract_set += tman->get_contract();
-          contract_set += ",";
-          num_txns_handled += 1;
+        if (g_node_id == emsg->view)
+        {
+            contract_set += tman->get_contract();
+            contract_set += ",";
+            num_txns_handled += 1;
         }
+#endif
+
         // Commit the results.
         tman->commit();
 
@@ -891,8 +906,8 @@ RC WorkerThread::process_execute_msg(Message *msg)
         {
             crsp->copy_from_txn(tman);
         }
-#else
-        // crsp->copy_from_txn(tman);
+#elif !SERVERLESS
+        crsp->copy_from_txn(tman);
 #endif
     }
 
@@ -905,15 +920,17 @@ RC WorkerThread::process_execute_msg(Message *msg)
         unset_ready_txn(tman);
 
         inc_next_index();
-
+#if !SERVERLESS
         // Execute the transaction
-        //tman->run_txn();
-        if (g_node_id == emsg->view) {
-          contract_set += tman->get_contract();
-          contract_set += ",";
-          num_txns_handled += 1;
+        tman->run_txn();
+#else
+        if (g_node_id == emsg->view)
+        {
+            contract_set += tman->get_contract();
+            contract_set += ",";
+            num_txns_handled += 1;
         }
-
+#endif
         // Commit the results.
         tman->commit();
 
@@ -922,8 +939,8 @@ RC WorkerThread::process_execute_msg(Message *msg)
         {
             crsp->copy_from_txn(tman);
         }
-#else
-        // crsp->copy_from_txn(tman);
+#elif !SERVERLESS
+        crsp->copy_from_txn(tman);
 #endif
 
         INC_STATS(get_thd_id(), txn_cnt, 1);
@@ -938,17 +955,23 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
     inc_next_index();
 
+#if !SERVERLESS
     // Execute the transaction
-    //txn_man->run_txn();
+    txn_man->run_txn();
+#else
 
-    if (g_node_id == emsg->view) {
-      contract_set += txn_man->get_contract();
-      //contract_set += ",";
-      num_txns_handled += 1;
-      batch_seqn++;
+    if (g_node_id == emsg->view)
+    {
+        contract_set += txn_man->get_contract();
+        //contract_set += ",";
+        num_txns_handled += 1;
+        batch_seqn++;
     }
+#endif
 
+#if SERVERLESS
     serverless_request.set_client_id(txn_man->client_id);
+#endif
 
 #if ENABLE_CHAIN
     // Add the block to the blockchain.
@@ -967,24 +990,26 @@ RC WorkerThread::process_execute_msg(Message *msg)
         msg_queue.enqueue(get_thd_id(), crsp, dest);
         dest.clear();
     }
+#elif !SERVERLESS
+    crsp->copy_from_txn(txn_man);
 #else
-    // crsp->copy_from_txn(txn_man);
-
-    if (g_node_id == emsg->view) {
-      num_invoker_calls += 1;
-      serverless_request.set_contracts(contract_set);
-      string request = serverless_request.create_request();
-      //if (batch_seqn < 5) {
-      //	cout << "REQUEST: " << request << "\n";
-      //}
-      cout << "SENDING REQ: " << batch_seqn  << " TO INVOKER\n";
-      ms_man->send_msg(request);
+    if (g_node_id == emsg->view)
+    {
+        num_invoker_calls += 1;
+        serverless_request.set_contracts(contract_set);
+        string request = serverless_request.create_request();
+        //if (batch_seqn < 5) {
+        //	cout << "REQUEST: " << request << "\n";
+        //}
+        // cout << "SENDING REQ: " << msg->txn_id / get_batch_size() << " TO INVOKER\n";
+        ms_man->send_msg(request);
     }
-
-    // vector<uint64_t> dest;
-    // dest.push_back(txn_man->client_id);
-    // msg_queue.enqueue(get_thd_id(), crsp, dest);
-    // dest.clear();
+#endif
+#if !SERVERLESS
+    vector<uint64_t> dest;
+    dest.push_back(txn_man->client_id);
+    msg_queue.enqueue(get_thd_id(), crsp, dest);
+    dest.clear();
 #endif
 
     INC_STATS(get_thd_id(), txn_cnt, 1);

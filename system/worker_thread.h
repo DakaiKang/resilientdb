@@ -4,7 +4,11 @@
 #include "global.h"
 #include "message.h"
 #include "crypto.h"
+
+#if SERVERLESS
 #include "microservice_manager.h"
+#endif
+
 class Workload;
 class Message;
 
@@ -42,10 +46,13 @@ public:
     void init_txn_man(YCSBClientQueryMessage *msg);
 #endif
 
+#if SERVERLESS
     uint64_t batch_seqn = 0;
     uint64_t num_txns_handled = 0;
     uint64_t num_invoker_calls = 0;
     MicroServiceManager* ms_man = NULL;
+#endif
+
     void send_execute_msg();
     RC process_execute_msg(Message *msg);
 

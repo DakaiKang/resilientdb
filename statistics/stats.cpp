@@ -681,8 +681,8 @@ void Stats::print(bool prog)
     fprintf(outf, "interval_tput=%f\ttxn_cnt=%ld\n", interval_tput, totals->txn_cnt - totals->previous_interval_txn_cnt);
     // fprintf(outf, "previous txn_count    %ld\n", totals->previous_interval_txn_cnt);
     fprintf(outf, "--------------------------------\n");
-    fprintf(outf, "tput         =%f\ttxn_cnt=%ld\n", tput, totals->txn_cnt);
-    fprintf(outf, "=======================================================\n");
+    fprintf(outf, "tput  =%f\ttxn_cnt=%ld\n", tput, totals->txn_cnt);
+    fprintf(outf, "========================================\n");
     fflush(outf);
     if (!prog)
     {

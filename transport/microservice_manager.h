@@ -4,6 +4,8 @@
 #include "message.h"
 #include <nng/nng.h>
 
+#if SERVERLESS
+
 enum ServType {
   INVKR = 0,
   VMCS
@@ -30,5 +32,7 @@ class MicroServiceManager
     void init_pair();
     void handle_error(const char* func, int rv);
 };
+
+#endif // serverless
 
 #endif

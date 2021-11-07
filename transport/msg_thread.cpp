@@ -124,6 +124,10 @@ void MessageThread::run()
 #endif
         if (msg->rtype == PBFT_CHKPT_MSG)
             sbuf->force = true;
+#if SERVERLESS
+        if (msg->rtype == BATCH_REQ)
+            sbuf->force = true;
+#endif
         msg->copy_to_buf(&(sbuf->buffer[sbuf->ptr]));
 
         sbuf->cnt += 1;

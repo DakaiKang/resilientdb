@@ -24,6 +24,23 @@ import (
 	"github.com/aws/aws-sdk-go/service/lambda"
 )
 
+var log_channel = make(chan string)
+
+func logResponse(c <-chan string) {
+	f, err := os.OpenFile("log.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	for seq := range c {
+		if _, err = f.WriteString(seq); err != nil {
+			panic(err)
+		}
+	}
+
+}
+
 type stats struct {
 	invokeCnt int32
 	recvd     int32
@@ -90,19 +107,50 @@ func newServerlessClient(region string) *serverlessClient {
 	return si
 }
 
-func (si *serverlessClient) invoke(i *lambda.InvokeInput, wg *sync.WaitGroup, num int) {
+func (si *serverlessClient) invoke(i *lambda.InvokeInput, wg *sync.WaitGroup, num int, seq string) {
 	defer wg.Done()
 	//fmt.Printf("invoking function %d\n", num)
 
-	//invokeStart := time.Now()
-	_, err := si.lambdaClient.Invoke(i)
-	//invokeTime := time.Since(invokeStart).Milliseconds()
-	//fmt.Printf("invocationt time: %v\n", invokeTime)
-	if err != nil {
-		//sts.outputStats()
-		log.Printf("serverlessClient error :: lambda invocation: %s", err.Error())
+	statusCode := "0"
+	tries := 0
+	maxRetries := 4
+	responseText := ""
+
+	for tries < maxRetries && statusCode == "0" {
+		if tries > 0 {
+			// fmt.Printf("seq number: ;%v; retrying: %d\n", seq, tries) // debug
+			fmt.Printf("try: %d;\tcode: %s;\ttext: %s;\n", tries, statusCode, responseText) // debug
+		}
+		tries++
+		//invokeStart := time.Now()
+		res, err := si.lambdaClient.Invoke(i)
+		//invokeTime := time.Since(invokeStart).Milliseconds()
+		//fmt.Printf("invocationt time: %v\n", invokeTime)
+		if err != nil {
+			//sts.outputStats()
+			log.Printf("serverlessClient error :: lambda invocation: %s", err.Error())
+			die("baaad")
+		}
+		var response map[string]interface{}
+		json.Unmarshal(res.Payload, &response)
+
+		log_channel <- string(res.Payload) + "\n\n"
+
+		statusCode = fmt.Sprintf("%v", response["veriferStatusCode"])
+		responseText = fmt.Sprintf("%v", response["verifierResponse"])
+		// if statusCode == "0" {
+		// 	fmt.Printf("seq number: ;%v; statusCode: %v\n", seq, response["veriferStatusCode"]) // debug
+		// 	fmt.Printf("seq number: ;%v; response: %v\n", seq, response["verifierResponse"])    // debug
+		// }
+
 	}
-	//fmt.Printf("fcn result: %v\n", res)
+	if tries == maxRetries {
+		fmt.Printf("--------------------- seq number: ;%v; couldn't make it\n", seq) // debug
+	}
+
+	// fmt.Printf("seq number: ;%v; res: %v\n", seq, response) // debug
+
+	// fmt.Printf("fcn result: %v\n", res)
 	//fmt.Printf("invoked fcn: %d\n", num)
 }
 
@@ -113,6 +161,7 @@ func handleMessage(servClient *serverlessClient, conf *config.InvokerConfig, msg
 	if err != nil {
 		die("handleMessage error :: unmarshal error: %s", err.Error())
 	}
+	seq_num := fmt.Sprintf("%v", msgJSON["sequenceNumber"])
 	for i := 0; i < (2*conf.F + 1); i++ {
 		msgJSON["uuid"] = conf.Uuids[i]
 		newMsg, err := json.Marshal(msgJSON)
@@ -120,15 +169,19 @@ func handleMessage(servClient *serverlessClient, conf *config.InvokerConfig, msg
 			die("handleMessage error :: marshal error: %s", err.Error())
 		}
 		invokeInput := lambda.InvokeInput{FunctionName: aws.String(conf.FcnName),
-			InvocationType: aws.String("Event"),
-			Payload:        newMsg}
+			// InvocationType: aws.String("Event"),
+			Payload: newMsg}
 		wg.Add(1)
 		sts.invokeCnt = atomic.AddInt32(&sts.invokeCnt, int32(1))
 
 		//  invokeStart := time.Now()
-		go servClient.invoke(&invokeInput, &wg, msgID)
+		// fmt.Printf(string(newMsg))
+		// fmt.Printf("----------------------------")
+
+		go servClient.invoke(&invokeInput, &wg, msgID, string(seq_num))
 		//  invokeTime := time.Since(invokeStart).Milliseconds()
 		//  fmt.Printf("invocationt time: %v\n", invokeTime)
+		// fmt.Printf("seq number: %v;    invoke_cnt: %v\n", msgJSON["sequenceNumber"], sts.invokeCnt) // debug
 	}
 	wg.Wait()
 }
@@ -141,6 +194,7 @@ func handleMessageUnderThreshold(msgWg *sync.WaitGroup, servClient *serverlessCl
 	if err != nil {
 		die("handleMessage error :: unmarshal error: %s", err.Error())
 	}
+	seq_num := fmt.Sprintf("%v", msgJSON["sequenceNumber"])
 	for i := 0; i < (2*conf.F + 1); i++ {
 		msgJSON["uuid"] = conf.Uuids[i]
 		newMsg, err := json.Marshal(msgJSON)
@@ -152,7 +206,7 @@ func handleMessageUnderThreshold(msgWg *sync.WaitGroup, servClient *serverlessCl
 			Payload:        newMsg}
 		wg.Add(1)
 		sts.invokeCnt = atomic.AddInt32(&sts.invokeCnt, int32(1))
-		go servClient.invoke(&invokeInput, &wg, msgID)
+		go servClient.invoke(&invokeInput, &wg, msgID, seq_num)
 	}
 	wg.Wait()
 }
@@ -210,15 +264,20 @@ func main() {
 	if err != nil {
 		die("config error :: could not get config: %s", err.Error())
 	}
-	servClients := make([]*serverlessClient, 1)
+	servClients := make([]*serverlessClient, 3)
 	// support for multiple regions possible. new client needed for each region.
 	// for new region create new client with region name and add to servClients
-	servClientWest := newServerlessClient("us-west-1")
-	servClients[0] = servClientWest
+	servClientWest1 := newServerlessClient("us-west-1")
+	servClientWest2 := newServerlessClient("us-west-2")
+	servClientEast2 := newServerlessClient("us-east-2")
+	servClients[0] = servClientWest1
+	servClients[1] = servClientWest2
+	servClients[2] = servClientEast2
 	fmt.Printf("starting invoker (event) (synced) (f = %d) (uuids size = %d)\n", conf.F, len(conf.Uuids))
 	// Handle common process-killing signals so we can 'gracefully' shut down:
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
+	go logResponse(log_channel)
 	go func(c chan os.Signal) {
 		sig := <-c
 		log.Printf("Caught signal %s: shutting down.", sig)
