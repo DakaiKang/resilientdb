@@ -129,7 +129,8 @@ func (si *serverlessClient) invoke(i *lambda.InvokeInput, wg *sync.WaitGroup, nu
 		if err != nil {
 			//sts.outputStats()
 			log.Printf("serverlessClient error :: lambda invocation: %s", err.Error())
-			die("baaad")
+			statusCode = "0"
+			continue
 		}
 		var response map[string]interface{}
 		json.Unmarshal(res.Payload, &response)
@@ -145,7 +146,7 @@ func (si *serverlessClient) invoke(i *lambda.InvokeInput, wg *sync.WaitGroup, nu
 
 	}
 	if tries == maxRetries {
-		fmt.Printf("--------------------- seq number: ;%v; couldn't make it\n", seq) // debug
+		die("--------------------- seq number: ;%v; couldn't make it\n", seq) // debug
 	}
 
 	// fmt.Printf("seq number: ;%v; res: %v\n", seq, response) // debug
