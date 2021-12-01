@@ -10,6 +10,7 @@
 #include <cmac.h>
 #include <aes.h>
 #include <cpr/cpr.h>
+#include <unistd.h>
 
 // change this to reflect the value of 'f' in the shim:
 #define F 1
@@ -282,6 +283,10 @@ void executeSmartContracts(Aws::Utils::Json::JsonView *requestView, Aws::Utils::
 
 invocation_response lambda_handler(invocation_request const &request)
 {
+
+    // unsigned int microseconds = 8 * 1000 * 1000;
+    // usleep(microseconds);
+
     using namespace Aws::Utils::Json;
 
     std::string log;

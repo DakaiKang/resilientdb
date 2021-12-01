@@ -265,15 +265,31 @@ func main() {
 	if err != nil {
 		die("config error :: could not get config: %s", err.Error())
 	}
-	servClients := make([]*serverlessClient, 3)
+	lambda_regions := 13
+	servClients := make([]*serverlessClient, lambda_regions)
+	regions := [13]string{
+		"us-west-1",
+		"us-west-2",
+		"us-east-2",
+		// "us-east-1",
+		"ca-central-1",
+		"eu-central-1",
+		"eu-west-1",
+		"eu-west-2",
+		"eu-west-3",
+		"eu-north-1",
+		// "ap-northeast-3",
+		"ap-northeast-2",
+		"ap-southeast-1",
+		"ap-southeast-2",
+		"ap-northeast-1",
+	}
 	// support for multiple regions possible. new client needed for each region.
 	// for new region create new client with region name and add to servClients
-	servClientWest1 := newServerlessClient("us-west-1")
-	servClientWest2 := newServerlessClient("us-west-2")
-	servClientEast2 := newServerlessClient("us-east-2")
-	servClients[0] = servClientWest1
-	servClients[1] = servClientWest2
-	servClients[2] = servClientEast2
+	for i := 0; i < len(servClients); i++ {
+		servClients[i] = newServerlessClient(regions[i])
+	}
+
 	fmt.Printf("starting invoker (event) (synced) (f = %d) (uuids size = %d)\n", conf.F, len(conf.Uuids))
 	// Handle common process-killing signals so we can 'gracefully' shut down:
 	sigc := make(chan os.Signal, 1)

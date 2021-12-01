@@ -30,7 +30,7 @@ for HOSTNAME in ${HOSTS}; do
 done
 invoker=$(echo $HOSTS | cut -d' ' -f1)
 echo $invoker
-ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -l ${USERNAME} ${invoker} "cd resilientdb; ulimit -n 4096;./invoker > ${RES_FILE}_invoker.log 2>&1 " &
+ssh -n -o BatchMode=yes -o StrictHostKeyChecking=no -l ${USERNAME} ${invoker} "cd resilientdb; ulimit -n 16000;./invoker > ${RES_FILE}_invoker.out 2>&1 " &
 
 while [ $count -gt 0 ]; do
 	wait $pids
