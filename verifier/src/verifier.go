@@ -31,7 +31,8 @@ var verified_channel = make(chan int)
 
 func checkNext(c <-chan int) {
 	for seq := range c {
-		last_verified++
+
+		// fmt.Printf("just verified:  ;%d\n", seq)
 		verified_map[seq] = true
 		for verified_map[last_verified] {
 			last_verified++
@@ -40,21 +41,6 @@ func checkNext(c <-chan int) {
 	}
 
 }
-
-/*
-func checkNext(c <-chan string) {
-	for seq := range c {
-		last_verified++
-		fmt.Printf("last verified:  ;%d;  %s\n", last_verified-1, seq)
-		// 	verified_map[seq] = true
-		// 	for verified_map[last_verified] {
-		// 		last_verified++
-		// 		fmt.Printf("last verified:  ;%d;    map_size:  %d\n", last_verified-1, len(verified_map))
-		// 	}
-	}
-
-}
-*/
 
 type ReadReq struct {
 	SeqNum  string   `json:"sequenceNumber"`
@@ -211,6 +197,14 @@ func (wh *WriteHandler) VerifyReadSnapshot(ReadSetSnapshot map[string]string) bo
 // Service Write Request. First verify request and, if verified, follow through with write:
 func (wh *WriteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+	// for name, values := range r.Header {
+	// 	// Loop over all values for the name.
+	// 	for _, value := range values {
+	// 		fmt.Println(name, value)
+	// 	}
+	// }
+	// fmt.Printf("--------------------\n")
+
 	wh.recvCntChan <- 1
 	wh.logTimeChan <- time.Now()
 	var ws WriteReq
@@ -224,6 +218,7 @@ func (wh *WriteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// fmt.Printf("recvd wreq: %v\n with batch sz: %d\n", ws, len(ws.WriteSet))
+	// fmt.Printf("Connection: %v\n", r.Header.Get("Connection"))
 
 	// TODO STORAGE
 

@@ -863,12 +863,14 @@ RC WorkerThread::process_execute_msg(Message *msg)
     ExecuteMessage *emsg = (ExecuteMessage *)msg;
 
 #if SERVERLESS
+#if SHIM
     // Not sure if strictly necessary. Just check to make sure that emsg contains commit messages:
     assert(emsg->num_commit_msgs != 0);
     //cout << "num commit_msgs = " << emsg->commit_msgs.size() << "\n";
     // Generate the certificate for the serverless request using the PBFT commit messages:
     vector<PBFTCommitMessage *> *cm_ptr = &(emsg->commit_msgs);
     serverless_request.set_certificate(cm_ptr);
+#endif
 
     string contract_set;
 #endif
@@ -1291,8 +1293,13 @@ void WorkerThread::create_and_send_batchreq(ClientQueryBatch *msg, uint64_t tid)
         dest.push_back(i);
     }
 
+#if SERVERLESS && !SHIM
+    Message::release_message(breq);
+    send_execute_msg();
+#else
     msg_queue.enqueue(get_thd_id(), breq, dest);
     dest.clear();
+#endif
 }
 
 /** Validates the contents of a message. */

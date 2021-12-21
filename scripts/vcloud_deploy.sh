@@ -9,7 +9,7 @@ count=0
 # verifier alias name (assumes alias is set in ssh config)
 verifier_host="$4"
 
-ssh -n ${verifier_host} "cd vdb; sudo ./verifier > ${RES_FILE}_v.out 2>&1" &
+ssh -n ${verifier_host} "cd vdb;ulimit -n 16000; sudo ./verifier > ${RES_FILE}_v.out 2>&1" &
 
 for HOSTNAME in ${HOSTS}; do
 	i=1

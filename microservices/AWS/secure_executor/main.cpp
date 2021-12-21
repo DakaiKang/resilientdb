@@ -142,12 +142,13 @@ void sendWriteToVerifier(std::string jsonString, Aws::Utils::Json::JsonValue *re
 {
     cpr::Response r = cpr::Post(cpr::Url{VERIFIER_HOST + "/write"},
                                 cpr::Header{{"Content-Type", "application/json"}},
-                                cpr::Header{{"Connection", "close"}}, cpr::Body{jsonString},
+                                cpr::Body{jsonString},
                                 cpr::ConnectTimeout{2000}, cpr::Timeout{2000});
     std::string text = r.text;
     if (r.status_code == 0)
     {
         text += r.error.message;
+        text += " [invocation successfull]";
     }
     (*response).WithInteger("veriferStatusCode", r.status_code).WithString("verifierResponse", text);//.WithString("verifier_data", jsonString)
 }
@@ -322,6 +323,7 @@ invocation_response lambda_handler(invocation_request const &request)
     /* If the request's certificate can be verified and if the request is a well-formed write request, we transmit the
    * writes to the verifier:
    */
+    // certified = true;
     if (certified && isWellFormedWriteRequest(&requestView))
     {
         if (isYCSB(&requestView))

@@ -22,6 +22,7 @@
 
 #define MESSAGE_PER_BUFFER 24
 #define SERVERLESS true
+#define SHIM true
 
 // GeoBFT Setting 
 #define GBFT false
@@ -134,7 +135,7 @@
 #define PARTITIONED 0
 #define REPLICATED 1
 // To select the amount of time to warmup and run.
-#define DONE_TIMER 1 * 60 * BILLION
+#define DONE_TIMER   25 * BILLION
 #define WARMUP_TIMER  10 * BILLION
 // Select the consensus algorithm to run.
 #define CONSENSUS PBFT

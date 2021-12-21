@@ -119,7 +119,7 @@ func (si *serverlessClient) invoke(i *lambda.InvokeInput, wg *sync.WaitGroup, nu
 	for tries < maxRetries && statusCode == "0" {
 		if tries > 0 {
 			// fmt.Printf("seq number: ;%v; retrying: %d\n", seq, tries) // debug
-			fmt.Printf("try: %d;\tcode: %s;\ttext: %s;\n", tries, statusCode, responseText) // debug
+			fmt.Printf("try: %d;  code: %s;  text: %s;\n", tries, statusCode, responseText) // debug
 		}
 		tries++
 		//invokeStart := time.Now()
@@ -140,8 +140,7 @@ func (si *serverlessClient) invoke(i *lambda.InvokeInput, wg *sync.WaitGroup, nu
 		statusCode = fmt.Sprintf("%v", response["veriferStatusCode"])
 		responseText = fmt.Sprintf("%v", response["verifierResponse"])
 		// if statusCode == "0" {
-		// 	fmt.Printf("seq number: ;%v; statusCode: %v\n", seq, response["veriferStatusCode"]) // debug
-		// 	fmt.Printf("seq number: ;%v; response: %v\n", seq, response["verifierResponse"])    // debug
+		// 	fmt.Printf("seq number: ;%v; statusCode: %v; response: %v\n", seq, response["veriferStatusCode"], response["verifierResponse"]) // debug
 		// }
 
 	}
@@ -255,6 +254,7 @@ func runInvoker(servClients []*serverlessClient, conf *config.InvokerConfig) {
 				numServClients := len(servClients)
 				go handleMessage(servClients[msgID%numServClients], conf, msg, msgID)
 				msgID++
+				// fmt.Printf("%d\n", msgID)
 			}
 		}
 	}
@@ -265,7 +265,7 @@ func main() {
 	if err != nil {
 		die("config error :: could not get config: %s", err.Error())
 	}
-	lambda_regions := 13
+	lambda_regions := 5
 	servClients := make([]*serverlessClient, lambda_regions)
 	regions := [13]string{
 		"us-west-1",
@@ -290,7 +290,7 @@ func main() {
 		servClients[i] = newServerlessClient(regions[i])
 	}
 
-	fmt.Printf("starting invoker (event) (synced) (f = %d) (uuids size = %d)\n", conf.F, len(conf.Uuids))
+	fmt.Printf("starting invoker (event) (synced) (f = %d) (regions size = %d)\n", conf.F, len(servClients))
 	// Handle common process-killing signals so we can 'gracefully' shut down:
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
