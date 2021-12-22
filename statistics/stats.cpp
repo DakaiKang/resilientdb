@@ -987,6 +987,14 @@ void Stats::set_message_size(uint64_t rtype, uint64_t size)
         this->prepare_msg_size = size;
         break;
 #endif
+#if CFT
+    case CFT_ACCEPT:
+        this->cft_accept_msg_size = size;
+        break;
+    case CFT_COMMIT:
+        this->cft_commit_msg_size = size;
+        break;
+#endif
 #if GBFT
     case GBFT_COMMIT_CERTIFICATE_MSG:
         this->gbft_ccm_msg_size = size;

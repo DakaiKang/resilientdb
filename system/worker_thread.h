@@ -82,6 +82,11 @@ public:
     RC process_pbft_commit_msg(Message *msg);
     void unset_ready_txn(TxnManager * tman);
 
+#if CFT
+    RC process_cft_accept_msg(Message * msg);
+    RC process_cft_commit_msg(Message * msg);
+#endif
+
 #if GBFT
     RC process_gbft_commit_certificate_msg(Message * msg);
 #endif

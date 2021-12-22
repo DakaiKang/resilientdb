@@ -14,7 +14,7 @@
 #include "timer.h"
 #include "chain.h"
 
-#if CONSENSUS == PBFT && !GBFT
+#if CONSENSUS == PBFT && !GBFT && !CFT
 /**
  * Processes an incoming client batch and sends a Pre-prepare message to al replicas.
  *

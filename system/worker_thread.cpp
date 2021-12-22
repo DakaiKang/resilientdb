@@ -142,6 +142,14 @@ void WorkerThread::process(Message *msg)
     case PBFT_COMMIT_MSG:
         rc = process_pbft_commit_msg(msg);
         break;
+#if CFT
+    case CFT_ACCEPT:
+        rc = process_cft_accept_msg(msg);
+        break;
+    case CFT_COMMIT:
+        rc = process_cft_commit_msg(msg);
+        break;
+#endif
 #if GBFT
     case GBFT_COMMIT_CERTIFICATE_MSG:
         rc = process_gbft_commit_certificate_msg(msg);
@@ -863,7 +871,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
     ExecuteMessage *emsg = (ExecuteMessage *)msg;
 
 #if SERVERLESS
-#if SHIM
+#if SHIM && !CFT
     // Not sure if strictly necessary. Just check to make sure that emsg contains commit messages:
     assert(emsg->num_commit_msgs != 0);
     //cout << "num commit_msgs = " << emsg->commit_msgs.size() << "\n";
@@ -1346,6 +1354,22 @@ bool WorkerThread::validate_msg(Message *msg)
             assert(0);
         }
         break;
+
+#if CFT
+
+    case CFT_ACCEPT:
+        if (!((CFTAcceptMessage *)msg)->validate())
+        {
+            assert(0);
+        }
+        break;
+    case CFT_COMMIT:
+        if (!((CFTCommitMessage *)msg)->validate())
+        {
+            assert(0);
+        }
+        break;
+#endif
 
 #if VIEW_CHANGES
     case VIEW_CHANGE:

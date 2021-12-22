@@ -472,6 +472,36 @@ public:
 #endif // GBFT
 
 /****************************************/
+/*	CFT SPECIFIC		*/
+/****************************************/
+#if CFT
+class CFTAcceptMessage : public Message
+{
+public:
+    void copy_from_buf(char *buf);
+    void copy_to_buf(char *buf);
+    void copy_from_txn(TxnManager *txn);
+    void copy_to_txn(TxnManager *txn);
+    uint64_t get_size();
+    void init() {}
+    void release() {}
+    string toString();
+    void sign(uint64_t dest_node = UINT64_MAX);
+    bool validate();
+
+    uint64_t view;        // primary node id
+    string hash;          //request message digest
+    uint64_t hashSize;    //size of hash (for removing from buf)
+    uint64_t return_node; //id of node that sent this message
+};
+
+class CFTCommitMessage : public CFTAcceptMessage
+{
+};
+
+#endif
+
+/****************************************/
 /*	VIEW CHANGE SPECIFIC		*/
 /****************************************/
 

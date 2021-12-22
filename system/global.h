@@ -216,9 +216,13 @@ enum RemReqType
 #if SERVERLESS
     V_RESP,
 #endif
+#if CFT
+    CFT_ACCEPT,
+    CFT_COMMIT,
+#endif
     PBFT_PREP_MSG,   // Prepare
     PBFT_COMMIT_MSG, // Commit
-    PBFT_CHKPT_MSG,   // Checkpoint and Garbage Collection
+    PBFT_CHKPT_MSG,  // Checkpoint and Garbage Collection
 };
 
 /* Thread */
@@ -391,8 +395,7 @@ int is_in_same_cluster(uint64_t first_id, uint64_t second_id);
 bool is_local_request(TxnManager *tman);
 bool is_primary_node(uint64_t thd_id, uint64_t node = g_node_id);
 
-
-// void set_view(uint64_t nview, int cluster = 0); 
+// void set_view(uint64_t nview, int cluster = 0);
 // uint64_t get_view(int cluster = 0);
 
 extern uint32_t gbft_last_commited_txn;
@@ -433,6 +436,11 @@ extern double input_thd_idle_time[REM_THREAD_CNT];
 // Maps for client response couting
 extern SpinLockMap<uint64_t, uint64_t> client_responses_count;
 extern SpinLockMap<uint64_t, ClientResponseMessage *> client_responses_directory;
+
+#if CFT
+// Maps for counting accept messages at primary in 2PC protocol
+extern SpinLockMap<uint64_t, uint64_t> cft_accept_count;
+#endif
 
 // Payload for messages.
 #if PAYLOAD_ENABLE

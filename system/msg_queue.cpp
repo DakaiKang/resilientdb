@@ -91,6 +91,22 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
         }
         break;
 #endif
+#if CFT
+    case CFT_ACCEPT:
+        for (uint64_t i = 0; i < dest.size(); i++)
+        {
+            ((CFTAcceptMessage *)msg)->sign(dest[i]);
+            entry->allsign.push_back(((CFTAcceptMessage *)msg)->signature);
+        }
+        break;
+    case CFT_COMMIT:
+        for (uint64_t i = 0; i < dest.size(); i++)
+        {
+            ((CFTCommitMessage *)msg)->sign(dest[i]);
+            entry->allsign.push_back(((CFTCommitMessage *)msg)->signature);
+        }
+        break;
+#endif
 #if GBFT
     case PBFT_COMMIT_MSG:
         ((PBFTCommitMessage *)msg)->sign(dest[0]);
@@ -157,6 +173,11 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
     case PBFT_CHKPT_MSG:
     case PBFT_PREP_MSG:
     case PBFT_COMMIT_MSG:
+
+#if CFT
+    case CFT_COMMIT:
+    case CFT_ACCEPT:
+#endif
 
 #if GBFT
     case GBFT_COMMIT_CERTIFICATE_MSG:

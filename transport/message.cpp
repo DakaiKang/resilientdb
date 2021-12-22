@@ -151,6 +151,14 @@ Message *Message::create_message(RemReqType rtype)
 		msg = new GeoBFTCommitCertificateMessage;
 		break;
 #endif
+#if CFT
+	case CFT_ACCEPT:
+		msg = new CFTAcceptMessage;
+		break;
+	case CFT_COMMIT:
+		msg = new CFTCommitMessage;
+		break;
+#endif
 
 	case PBFT_CHKPT_MSG:
 		msg = new CheckpointMessage;
@@ -416,6 +424,22 @@ void Message::release_message(Message *msg)
 		delete m_msg;
 		break;
 	}
+#if CFT
+	case CFT_ACCEPT:
+	{
+		CFTAcceptMessage *m_msg = (CFTAcceptMessage *)msg;
+		m_msg->release();
+		delete m_msg;
+		break;
+	}
+	case CFT_COMMIT:
+	{
+		CFTCommitMessage *m_msg = (CFTCommitMessage *)msg;
+		m_msg->release();
+		delete m_msg;
+		break;
+	}
+#endif
 #if GBFT
 	case GBFT_COMMIT_CERTIFICATE_MSG:
 	{
@@ -1035,9 +1059,9 @@ uint64_t VerifierResponseMessage::get_size()
 	// account for num_writes
 	sz += sizeof(uint64_t);
 	// client TS
-	sz += sizeof(uint64_t); 
-	// sequence number 
-	sz += sizeof(uint64_t); 
+	sz += sizeof(uint64_t);
+	// sequence number
+	sz += sizeof(uint64_t);
 	return sz;
 }
 
@@ -2117,6 +2141,125 @@ bool PBFTCommitMessage::validate()
 #endif // USE_CRYPTO
 	return true;
 }
+
+#if CFT
+
+uint64_t CFTAcceptMessage::get_size()
+{
+	uint64_t size = Message::mget_size();
+
+	size += sizeof(view);
+	size += hash.length();
+	size += sizeof(hashSize);
+	size += sizeof(return_node);
+
+	return size;
+}
+
+void CFTAcceptMessage::copy_from_txn(TxnManager *txn)
+{
+	Message::mcopy_from_txn(txn);
+
+	this->view = get_current_view(txn->get_thd_id());
+	this->hash = txn->get_hash();
+	this->hashSize = txn->get_hashSize();
+	this->return_node = g_node_id;
+	this->txn_id = txn->get_txn_id();
+}
+
+void CFTAcceptMessage::copy_to_txn(TxnManager *txn)
+{
+	Message::mcopy_to_txn(txn);
+}
+
+void CFTAcceptMessage::copy_from_buf(char *buf)
+{
+	Message::mcopy_from_buf(buf);
+
+	uint64_t ptr = Message::mget_size();
+
+	COPY_VAL(view, buf, ptr);
+	COPY_VAL(hashSize, buf, ptr);
+
+	ptr = buf_to_string(buf, ptr, hash, hashSize);
+
+	COPY_VAL(return_node, buf, ptr);
+
+	assert(ptr == get_size());
+}
+
+void CFTAcceptMessage::copy_to_buf(char *buf)
+{
+	Message::mcopy_to_buf(buf);
+
+	uint64_t ptr = Message::mget_size();
+
+	COPY_BUF(buf, view, ptr);
+	COPY_BUF(buf, hashSize, ptr);
+
+	char v;
+	for (uint64_t i = 0; i < hash.size(); i++)
+	{
+		v = hash[i];
+		COPY_BUF(buf, v, ptr);
+	}
+
+	COPY_BUF(buf, return_node, ptr);
+	assert(ptr == get_size());
+}
+
+string CFTAcceptMessage::toString()
+{
+	string signString = std::to_string(this->view);
+	signString += '_' + this->hash + '_' + std::to_string(this->return_node);
+
+	return signString;
+}
+
+//signs current message
+void CFTAcceptMessage::sign(uint64_t dest_node)
+{
+#if USE_CRYPTO
+	string message = this->toString();
+
+#if GBFT
+	signingClientNode(message, this->signature, this->pubKey, dest_node);
+#else
+	signingNodeNode(message, this->signature, this->pubKey, dest_node);
+#endif
+
+#else
+	this->signature = "0";
+#endif
+	this->sigSize = this->signature.size();
+	this->keySize = this->pubKey.size();
+}
+
+//makes sure message is valid, returns true or false;
+bool CFTAcceptMessage::validate()
+{
+	string message = this->toString();
+
+#if USE_CRYPTO
+
+#if GBFT
+	if (!validateClientNode(message, this->pubKey, this->signature, this->return_node_id))
+	{
+		assert(0);
+		return false;
+	}
+#else
+	if (!validateNodeNode(message, this->pubKey, this->signature, this->return_node_id))
+	{
+		assert(0);
+		return false;
+	}
+#endif // GBFT
+
+#endif // USE_CRYPTO
+	return true;
+}
+#endif
 
 /****************************************/
 /*	VIEW CHANGE SPECIFIC		*/

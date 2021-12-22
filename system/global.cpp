@@ -68,8 +68,6 @@ UInt32 g_batching_thread_cnt = BATCH_THREAD_CNT;
 UInt32 g_checkpointing_thread_cnt = CHECKPOINT_THREAD_CNT;
 UInt32 g_execution_thread_cnt = EXECUTE_THREAD_CNT;
 
-
-
 UInt32 g_rem_thread_cnt = REM_THREAD_CNT;
 UInt32 g_send_thread_cnt = SEND_THREAD_CNT;
 UInt32 g_total_thread_cnt = g_thread_cnt + g_rem_thread_cnt + g_send_thread_cnt;
@@ -144,6 +142,8 @@ uint64_t totKey = 0;
 uint64_t indexSize = 2 * g_client_node_cnt * g_inflight_max;
 #if GBFT
 uint64_t g_min_invalid_nodes = (gbft_cluster_size - 1) / 3; //min number of valid nodes
+#elif CFT
+uint64_t g_min_invalid_nodes = (g_node_cnt - 1) / 2; //min number of valid nodes
 #else
 uint64_t g_min_invalid_nodes = (g_node_cnt - 1) / 3; //min number of valid nodes
 #endif
@@ -329,7 +329,7 @@ uint64_t view_to_primary(uint64_t view, uint64_t node)
 {
 	return view;
 }
-#endif 
+#endif
 
 #if GBFT
 SpinLockSet<string> gbft_ccm_checklist;
@@ -440,6 +440,11 @@ double input_thd_idle_time[REM_THREAD_CNT] = {0};
 // Maps for client response couting
 SpinLockMap<uint64_t, uint64_t> client_responses_count;
 SpinLockMap<uint64_t, ClientResponseMessage *> client_responses_directory;
+
+#if CFT
+// Maps for counting accept messages at primary in 2PC protocol
+SpinLockMap<uint64_t, uint64_t> cft_accept_count;
+#endif
 
 // Payload for messages.
 #if PAYLOAD_ENABLE

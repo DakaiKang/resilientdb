@@ -1,13 +1,14 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 // Specify the number of servers or replicas
-#define NODE_CNT 8
+#define NODE_CNT 4
 // Number of worker threads at primary. 
 #define THREAD_CNT 5 // This Should be the sum of following thread count + protocol specifig threads
 #define WORKER_THREAD_CNT 1
 #define BATCH_THREAD_CNT 2
 #define CHECKPOINT_THREAD_CNT 1
 #define EXECUTE_THREAD_CNT 1
+#define CFT true // Crash fault tolerance (paxos)
 // IO THREADS
 #define REM_THREAD_CNT 2
 #define SEND_THREAD_CNT 1
