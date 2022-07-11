@@ -13,7 +13,7 @@ var jsonMap map[string]interface{}
 
 func call_verifier(payload []byte) {
 
-	url := "http://129.159.37.193/write"
+	url := "http://152.70.114.32/write"
 	// fmt.Println("payload:>", string(payload))
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))

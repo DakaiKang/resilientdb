@@ -265,7 +265,7 @@ func main() {
 	if err != nil {
 		die("config error :: could not get config: %s", err.Error())
 	}
-	lambda_regions := 5
+	lambda_regions := 13
 	servClients := make([]*serverlessClient, lambda_regions)
 	regions := [13]string{
 		"us-west-1",

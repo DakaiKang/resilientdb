@@ -838,6 +838,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
     // }
 
     uint64_t ctime = get_sys_clock();
+    // while(get_sys_clock() - ctime < 500 * 1000000);
 #if SERVERLESS
     // initialize microservice manager, if it hasn't been initialized already:
     if (ms_man == NULL && view_to_primary(get_current_view(get_thd_id())) == g_node_id)

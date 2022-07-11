@@ -14,7 +14,7 @@ home_directory = "/home/ubuntu"
 PATH = os.getcwd()
 #result_dir = PATH + "/results/"
 result_dir = home_directory+"/resilientdb/results/"
-verifier_ip="129.159.37.193"
+verifier_ip="152.70.114.32"
 
 # Total nodes
 nds = int(argv[1])

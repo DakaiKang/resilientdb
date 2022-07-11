@@ -10,12 +10,13 @@ count=0
 verifier_host="$4"
 
 ssh -n ${verifier_host} "cd vdb;ulimit -n 16000; sudo ./verifier > ${RES_FILE}_v.out 2>&1" &
+sleep 1
 
 for HOSTNAME in ${HOSTS}; do
 	i=1
 	if [ $count -ge $NODE_CNT ]; then
 		i=0
-	    SCRIPT="ulimit -n 4096;./v_recv ${count} > v_recv.log 2>&1 & ./runcl -nid${count} > ${RES_FILE}${count}.out 2>&1"
+	    SCRIPT="ulimit -n 4096;./v_recv ${count} >  ${RES_FILE}${count}_recv.out 2>&1 & ./runcl -nid${count} > ${RES_FILE}${count}.out 2>&1"
 	    echo "${HOSTNAME}: v_recv and runcl ${count}"
 	else
 	    SCRIPT="ulimit -n 4096; ./rundb -nid${count} > ${RES_FILE}${count}.out 2>&1"

@@ -42,23 +42,23 @@ struct mbuf
     }
     bool ready()
     {
-        if (simulation->is_warmup_done() && ISSERVER)
+        // if (simulation->is_setup_done() && ISSERVER)
+        // {
+        if (cnt == MESSAGE_PER_BUFFER || (force && cnt))
         {
-            if (cnt == MESSAGE_PER_BUFFER || (force && cnt)){
-                force = false;
-                return true;
-
-            }
-            return false;
+            force = false;
+            return true;
         }
-        else
-        {
-            if (cnt == 0)
-                return false;
-            if ((get_sys_clock() - starttime) >= g_msg_time_limit)
-                return true;
-            return false;
-        }
+        return false;
+        // }
+        // else
+        // {
+        //     if (cnt == 0)
+        //         return false;
+        //     if ((get_sys_clock() - starttime) >= g_msg_time_limit)
+        //         return true;
+        //     return false;
+        // }
     }
 };
 

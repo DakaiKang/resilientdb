@@ -104,7 +104,7 @@ func main() {
 	go sts.IncWrite(writeCntChan)
 	recvMap := make(map[uint64]int)
 	// Pretty dumb. shouldn't be hardcoded:
-	vURL := "tcp://10.0.0.246:4000"
+	vURL := "tcp://10.1.0.182:4000"
 	rURL := "ipc:///tmp/verifier"
 	collectMessages(vURL, rURL, topic, writeCntChan, &recvMap)
 }

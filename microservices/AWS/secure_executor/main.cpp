@@ -14,7 +14,7 @@
 
 // change this to reflect the value of 'f' in the shim:
 #define F 1
-const std::string VERIFIER_HOST = "http://129.159.37.193";
+const std::string VERIFIER_HOST = "http://152.70.114.32";
 
 typedef unsigned char byte;
 
@@ -285,7 +285,7 @@ void executeSmartContracts(Aws::Utils::Json::JsonView *requestView, Aws::Utils::
 invocation_response lambda_handler(invocation_request const &request)
 {
 
-    // unsigned int microseconds = 8 * 1000 * 1000;
+    // unsigned int microseconds =  2000 * 1000;
     // usleep(microseconds);
 
     using namespace Aws::Utils::Json;

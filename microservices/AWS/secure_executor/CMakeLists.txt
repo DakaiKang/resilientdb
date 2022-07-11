@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_STANDARD 11)
-set(REPO_ROOT "/home/sajjad/data/resdb")
+set(REPO_ROOT "/home/ubuntu/resilientdb")
 set(CMAKE_PREFIX_PATH "${REPO_ROOT}/deps/aws-lambda-cpp/lambda-install")
-list(APPEND CMAKE_PREFIX_PATH "${REPO_ROOT}/deps/AWS-SDK")
+list(APPEND CMAKE_PREFIX_PATH "/usr/local/lib/cmake/AWSSDK")
 
 
 project(secure_executor LANGUAGES CXX)
