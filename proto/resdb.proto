@@ -51,6 +51,7 @@ message Request {
     int32 ret = 12;
     SignatureInfo data_signature = 13;
     RegionInfo region_info = 14;
+
 }
 
 // The response message containing response

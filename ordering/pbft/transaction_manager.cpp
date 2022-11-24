@@ -25,13 +25,14 @@ TransactionManager::TransactionManager(
             if (checkpoint_manager_) {
               checkpoint_manager_->AddCommitData(std::move(request));
             }
-            collector_pool_->Update(seq);
           },
           system_info_, std::move(executor_impl))),
       collector_pool_(std::make_unique<LockFreeCollectorPool>(
           "txn", config_.GetMaxProcessTxn(), transaction_executor_.get(),
           config_.GetConfigData().enable_viewchange())) {
   global_stats_ = Stats::GetGlobalStats();
+  transaction_executor_->SetSeqUpdateNotifyFunc(
+      [&](uint64_t seq) { collector_pool_->Update(seq - 1); });
 }
 
 std::unique_ptr<BatchClientResponse> TransactionManager::GetResponseMsg() {

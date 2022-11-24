@@ -62,6 +62,12 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
   client_request->set_current_view(transaction_manager_->GetCurrentView());
   client_request->set_seq(*seq);
   client_request->set_sender_id(config_.GetSelfInfo().id());
+
+  // client_request->set_instance(config_.GetSelfInfo().id());
+  // if(*seq % 100 == 0){
+  //   LOG(ERROR) << *seq << " " << client_request->instance() << " ";
+  // }
+
   replica_client_->BroadCast(*client_request);
   return 0;
 }

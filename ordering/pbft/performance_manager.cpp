@@ -23,7 +23,7 @@ PerformanceManager::PerformanceManager(const ResDBConfig& config,
           .public_key()
           .public_key_info()
           .type() == CertificateKeyInfo::CLIENT) {
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 1; ++i) {
       client_req_thread_[i] =
           std::thread(&PerformanceManager::BatchProposeMsg, this);
     }
@@ -65,7 +65,7 @@ int PerformanceManager::StartEval() {
     queue_item->context = nullptr;
     queue_item->client_request = GenerateClientRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 20000000) {
+    if (i == 200000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -235,8 +235,17 @@ int PerformanceManager::DoBatch(
     req->set_id(i);
   }
 
-  batch_request.set_createtime(get_sys_clock());
   batch_request.SerializeToString(new_request->mutable_data());
+  if (verifier_) {
+	  auto signature_or = verifier_->SignMessage(new_request->data());
+	  if (!signature_or.ok()) {
+		  LOG(ERROR) << "Sign message fail";
+		  return -2;
+	  }
+	  *new_request->mutable_data_signature() = *signature_or;
+  }
+  batch_request.set_createtime(get_sys_clock());
+
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
 
