@@ -27,6 +27,8 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
       private_key_(private_key),
       public_key_cert_info_(public_key_cert_info) {
   for (const auto& region : config_data.region()) {
+      LOG(INFO) << "get instance number:"
+                << region.instance();
     if (region.region_id() == config_data.self_region_id()) {
       LOG(INFO) << "get region info:" << region.DebugString();
       for (const auto& replica : region.replica_info()) {
@@ -36,6 +38,7 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
                 << region.replica_info_size();
       break;
     }
+
   }
 }
 

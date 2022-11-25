@@ -27,6 +27,7 @@ def gen_svr_config(config):
         config_data=ResConfigData() 
         region = config_data.region.add()
         region.region_id=1
+        region.instance = 1
         for info in info_list:
             replica = Parse(json.dumps(info), ReplicaInfo())
             region.replica_info.append(replica)

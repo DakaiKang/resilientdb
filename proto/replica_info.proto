@@ -15,6 +15,7 @@ message ReplicaInfo {
 message RegionInfo {
   repeated ReplicaInfo replica_info = 1;
   int32 region_id = 2;
+  uint32 instance = 3;
 }
 
 message ResConfigData{
