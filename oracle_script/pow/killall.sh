@@ -1,4 +1,4 @@
-#input="/home/ubuntu/nexres/oracle_script/pow/rep_120/svr_list.txt"
+#input="/home/ubuntu/resilientdb/oracle_script/pow/rep_120/svr_list.txt"
 input=$1
 
 count=0
@@ -8,7 +8,7 @@ HOSTS=`cat ${input}`
 i=0
 for HOSTNAME in ${HOSTS}; do
 	if [ $i -eq 1 ]; then
-		ssh -i /home/ubuntu/nexres/oracle_script/ssh-2022-03-24.key -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${HOSTNAME} " killall -9 pow_server; " &
+		ssh -i /home/ubuntu/resilientdb/oracle_script/ssh-2022-03-24.key -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${HOSTNAME} " killall -9 pow_server; " &
 		i=0
 	else
 		i=1

@@ -1,13 +1,13 @@
 
 iplist=`cat iplist.txt`
-key=~/.ssh/ssh-2022-03-24.key
+key=~/.ssh/dakai_dev.pem
 dir=$PWD
 
 count=1
 for ip in ${iplist[@]};
 do
 	echo ${ip}
-	ssh -i ~/.ssh/ssh-2022-03-24.key -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} " killall -9 kv_server_performance; " &
+	ssh -i ~/.ssh/dakai_dev.pem -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} " killall -9 kv_server_performance; " &
 	((count++))
 done
 
@@ -21,7 +21,7 @@ echo "================ kill done ======"
 count=1
 for ip in ${iplist[@]};
 do
-	ssh -i ~/.ssh/ssh-2022-03-24.key -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} " rm -rf /home/ubuntu/kv_server_performance; rm server*.log; rm -rf server.config; rm -rf cert; mkdir -p pbft_cert/; " &
+	ssh -i ~/.ssh/dakai_dev.pem -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} " rm -rf /home/ubuntu/kv_server_performance; rm server*.log; rm -rf server.config; rm -rf cert; mkdir -p pbft_cert/; " &
 	((count++))
 done
 
@@ -34,10 +34,10 @@ count=1
 idx=1
 for ip in ${iplist[@]};
 do
-scp -i ~/.ssh/ssh-2022-03-24.key /home/ubuntu/nexres/bazel-bin/kv_server/kv_server_performance ubuntu@${ip}:/home/ubuntu &
-scp -i ~/.ssh/ssh-2022-03-24.key ${dir}/server.config ubuntu@${ip}:/home/ubuntu &
-scp -i ~/.ssh/ssh-2022-03-24.key ${dir}/cert/node_${idx}.key.pri ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
-scp -i ~/.ssh/ssh-2022-03-24.key ${dir}/cert/cert_${idx}.cert ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
+scp -i ~/.ssh/dakai_dev.pem /home/ubuntu/resilientdb/bazel-bin/kv_server/kv_server_performance ubuntu@${ip}:/home/ubuntu &
+scp -i ~/.ssh/dakai_dev.pem ${dir}/server.config ubuntu@${ip}:/home/ubuntu &
+scp -i ~/.ssh/dakai_dev.pem ${dir}/cert/node_${idx}.key.pri ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
+scp -i ~/.ssh/dakai_dev.pem ${dir}/cert/cert_${idx}.cert ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
 	((count++))
 	((count++))
 	((count++))
@@ -56,7 +56,7 @@ idx=1
 count=1
 for ip in ${iplist[@]};
 do
-	ssh -i ~/.ssh/ssh-2022-03-24.key -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} " nohup /home/ubuntu/kv_server_performance /home/ubuntu/server.config pbft_cert//node_${idx}.key.pri pbft_cert//cert_${idx}.cert > server${idx}.log 2>&1 & " &
+	ssh -i ~/.ssh/dakai_dev.pem -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} " nohup /home/ubuntu/kv_server_performance /home/ubuntu/server.config pbft_cert//node_${idx}.key.pri pbft_cert//cert_${idx}.cert > server${idx}.log 2>&1 & " &
 	((count++))
 	((idx++))
 done

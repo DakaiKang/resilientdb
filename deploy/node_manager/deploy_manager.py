@@ -8,7 +8,7 @@ from proto.replica_info_pb2 import ResConfigData,ReplicaInfo
 from google.protobuf.json_format import MessageToJson
 from google.protobuf.json_format import Parse, ParseDict
 
-script_path="/home/ubuntu/nexres/deploy/node_manager"
+script_path="/home/ubuntu/resilientdb/deploy/node_manager"
 
 def RunCmd(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

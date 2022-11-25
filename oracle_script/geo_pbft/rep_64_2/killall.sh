@@ -1,7 +1,7 @@
 
 iplist=`cat iplist.txt`
 . benchmark.conf
-key=~/.ssh/junchao.pem
+key=~/.ssh/dakai_dev.pem
 cur_path=$PWD
 
 count=1

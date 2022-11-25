@@ -1,6 +1,6 @@
 
 iplist=`cat iplist.txt`
-key=~/.ssh/junchao.pem
+key=~/.ssh/dakai_dev.pem
 
 count=1
 for ip in ${iplist[@]};
@@ -33,10 +33,10 @@ count=1
 idx=1
 for ip in ${iplist[@]};
 do
- scp -i ${key} /home/ubuntu/nexres/bazel-bin/application/hotstuff/kv_server_performance ubuntu@${ip}:/home/ubuntu &
-scp -i ${key} /home/ubuntu/nexres/oracle_script/hotstuff/rep_16/server.config ubuntu@${ip}:/home/ubuntu &
-scp -i ${key} /home/ubuntu/nexres/oracle_script/hotstuff/rep_16/cert/node_${idx}.key.pri ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
-scp -i ${key} /home/ubuntu/nexres/oracle_script/hotstuff/rep_16/cert/cert_${idx}.cert ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
+ scp -i ${key} /home/ubuntu/resilientdb/bazel-bin/application/hotstuff/kv_server_performance ubuntu@${ip}:/home/ubuntu &
+scp -i ${key} /home/ubuntu/resilientdb/oracle_script/hotstuff/rep_16/server.config ubuntu@${ip}:/home/ubuntu &
+scp -i ${key} /home/ubuntu/resilientdb/oracle_script/hotstuff/rep_16/cert/node_${idx}.key.pri ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
+scp -i ${key} /home/ubuntu/resilientdb/oracle_script/hotstuff/rep_16/cert/cert_${idx}.cert ubuntu@${ip}:/home/ubuntu/pbft_cert/ &
 	((count++))
 	((count++))
 	((count++))

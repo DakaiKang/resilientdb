@@ -37,7 +37,14 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
-  if (config_.GetSelfInfo().id() != transaction_manager_->GetCurrentPrimary()) {
+  // if (config_.GetSelfInfo().id() != transaction_manager_->GetCurrentPrimary()) {
+  //   LOG(ERROR) << "current node is not primary. primary:"
+  //              << transaction_manager_->GetCurrentPrimary()
+  //              << " seq:" << client_request->seq();
+  //   return -2;
+  // }
+
+  if (config_.GetSelfInfo().id() > config_.GetConfigData().instance()) {
     LOG(ERROR) << "current node is not primary. primary:"
                << transaction_manager_->GetCurrentPrimary()
                << " seq:" << client_request->seq();
@@ -81,8 +88,14 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     return -2;
   }
 
-  if (request->sender_id() != transaction_manager_->GetCurrentPrimary()) {
-    LOG(ERROR) << "the request is not from primary. sender:"
+  // if (request->sender_id() != transaction_manager_->GetCurrentPrimary()) {
+  //   LOG(ERROR) << "the request is not from primary. sender:"
+  //              << request->sender_id() << " seq:" << request->seq();
+  //   return -2;
+  // }
+  uint32_t instance = config_.GetConfigData().instance();
+  if ((uint32_t)(request->sender_id()) != request->instance() || (uint32_t)(request->sender_id()) % instance != request->seq() % instance) {
+    LOG(ERROR) << "the request is not from a correct primary. sender:"
                << request->sender_id() << " seq:" << request->seq();
     return -2;
   }

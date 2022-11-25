@@ -9,5 +9,5 @@ Target //deploy/node_manager:deploy_manager up-to-date:
 INFO: Elapsed time: 0.316s, Critical Path: 0.01s
 INFO: 1 process: 1 internal.
 INFO: Build completed successfully, 1 total action
-INFO: Running command line: bazel-bin/deploy/node_manager/deploy_manager /home/ubuntu/nexres/deploy/node_manager
+INFO: Running command line: bazel-bin/deploy/node_manager/deploy_manager /home/ubuntu/resilientdb/deploy/node_manager
 INFO: Build completed successfully, 1 total action

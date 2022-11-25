@@ -33,6 +33,7 @@ TransactionManager::TransactionManager(
   global_stats_ = Stats::GetGlobalStats();
   transaction_executor_->SetSeqUpdateNotifyFunc(
       [&](uint64_t seq) { collector_pool_->Update(seq - 1); });
+  next_seq_ = config.GetSelfInfo().id();
 }
 
 std::unique_ptr<BatchClientResponse> TransactionManager::GetResponseMsg() {
@@ -57,7 +58,8 @@ absl::StatusOr<uint64_t> TransactionManager::AssignNextSeq() {
       static_cast<uint64_t>(config_.GetMaxProcessTxn())) {
     return absl::InvalidArgumentError("Seq has been used up.");
   }
-  return next_seq_++;
+  next_seq_ += config_.GetConfigData().instance();
+  return next_seq_ - config_.GetConfigData().instance();
 }
 
 std::vector<ReplicaInfo> TransactionManager::GetReplicas() {

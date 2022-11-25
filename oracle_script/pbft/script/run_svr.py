@@ -27,12 +27,13 @@ def gen_svr_config(config):
         config_data=ResConfigData() 
         region = config_data.region.add()
         region.region_id=1
-        region.instance = 1
+        
         for info in info_list:
             replica = Parse(json.dumps(info), ReplicaInfo())
             region.replica_info.append(replica)
 
         config_data.self_region_id = 1
+        config_data.instance = 16
         # config_data.is_performance_running = True
         # config_data.max_process_txn = 2048
         # config_data.client_batch_num = 100

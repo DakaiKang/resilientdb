@@ -113,7 +113,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request) {
   if (!batch_request.ParseFromString(request->data())) {
     LOG(ERROR) << "parse data fail";
   }
-
+  // LOG(ERROR) << request->instance() << "  " << request->seq();
   // LOG(INFO) << " get request batch size:"
   //        << batch_request.client_requests_size();
   std::unique_ptr<BatchClientResponse> batch_response =

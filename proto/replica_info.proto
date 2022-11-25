@@ -15,7 +15,6 @@ message ReplicaInfo {
 message RegionInfo {
   repeated ReplicaInfo replica_info = 1;
   int32 region_id = 2;
-  uint32 instance = 3;
 }
 
 message ResConfigData{
@@ -24,6 +23,7 @@ message ResConfigData{
   optional RocksDBInfo rocksdb_info = 3;
   optional LevelDBInfo leveldb_info = 4;
   optional bool enable_viewchange = 5;
+  uint32 instance = 6;
 }
 
 message ReplicaStates {
