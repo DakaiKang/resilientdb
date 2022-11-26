@@ -8,7 +8,7 @@
 
 namespace resdb {
 
-constexpr int BROADCAST_BATCH_NUM = 20;
+constexpr int BROADCAST_BATCH_NUM = 40;
 
 ResDBReplicaClient::ResDBReplicaClient(const std::vector<ReplicaInfo>& replicas,
                                        SignatureVerifier* verifier,
