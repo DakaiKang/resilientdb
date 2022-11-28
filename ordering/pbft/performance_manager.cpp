@@ -248,7 +248,7 @@ int PerformanceManager::DoBatch(
 
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
-  uint32_t primary = send_num_ % config_.GetConfigData().instance() + 1;
+  uint32_t primary = total_num_ % config_.GetConfigData().instance() + 1;
   replica_client_->SendMessage(*new_request, primary);
   LOG(ERROR) << "primary:" << primary;
   // replica_client_->SendMessage(*new_request, GetPrimary());
@@ -256,10 +256,10 @@ int PerformanceManager::DoBatch(
   send_num_++;
   if (total_num_++ == 1000000) {
     stop_ = true;
-    // LOG(WARNING) << "total num is done:" << total_num_;
+    LOG(WARNING) << "total num is done:" << total_num_;
   }
   if (total_num_ % 10000 == 0) {
-    // LOG(WARNING) << "total num is :" << total_num_;
+    LOG(WARNING) << "total num is :" << total_num_;
   }
   global_stats_->IncClientCall();
   return 0;

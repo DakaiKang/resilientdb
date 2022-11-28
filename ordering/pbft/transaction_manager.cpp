@@ -17,7 +17,6 @@ TransactionManager::TransactionManager(
           config,
           [&](std::unique_ptr<Request> request,
               std::unique_ptr<BatchClientResponse> resp_msg) {
-            uint64_t seq = request->seq();
             resp_msg->set_proxy_id(request->proxy_id());
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());

@@ -18,6 +18,7 @@ Stats::Stats(int sleep_time) {
 #ifdef TEST_MODE
   monitor_sleep_time_ = 1;
 #endif
+  monitor_sleep_time_ = 30;
   num_call_ = 0;
   num_commit_ = 0;
   run_time_ = 0;
@@ -144,7 +145,7 @@ void Stats::MonitorGlobal() {
                   "execute done:"
                << execute_done - last_execute_done << " seq gap:" << seq_gap
                << " total request:" << total_request - last_total_request
-               << " txn:" << (total_request - last_total_request) / 5
+               << " txn: " << (total_request - last_total_request) / 30
                << " "
                   "seq fail:"
                << seq_fail - last_seq_fail << " time:" << time
