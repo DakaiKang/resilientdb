@@ -101,7 +101,7 @@ class ResDBConfig {
   ReplicaInfo self_info_;
   const KeyInfo private_key_;
   const CertificateInfo public_key_cert_info_;
-  int client_timeout_ms_ = 3000000;
+  int client_timeout_ms_ = 300000000;
   std::string checkpoint_logging_path_;
   int checkpoint_water_mark_ = 5;
   bool is_enable_checkpoint_ = false;

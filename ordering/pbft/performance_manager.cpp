@@ -180,7 +180,7 @@ int PerformanceManager::BatchProposeMsg() {
   std::vector<std::unique_ptr<QueueItem>> batch_req;
   eval_ready_future_.get();
   while (!stop_) {
-    if (send_num_ > config_.GetMaxProcessTxn()) {
+    if (send_num_ > config_.GetMaxProcessTxn() / 4) {
       LOG(INFO) << "send num too high, wait:" << send_num_;
       usleep(100);
       continue;
