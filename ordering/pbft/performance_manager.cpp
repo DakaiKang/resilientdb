@@ -250,7 +250,7 @@ int PerformanceManager::DoBatch(
   new_request->set_proxy_id(config_.GetSelfInfo().id());
   uint32_t primary = total_num_ % config_.GetConfigData().instance() + 1;
   replica_client_->SendMessage(*new_request, primary);
-  LOG(ERROR) << "primary:" << primary;
+
   // replica_client_->SendMessage(*new_request, GetPrimary());
   global_stats_->BroadCastMsg();
   send_num_++;
