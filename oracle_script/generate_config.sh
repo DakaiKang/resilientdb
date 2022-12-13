@@ -9,7 +9,7 @@ ADMIN_PUBLIC_KEY=../cert/admin.key.pub
 CERT_PATH=cert/
 USERNAME=ubuntu
 BASE_PORT=37000
-CLIENT_NUM=4
+CLIENT_NUM=16
 
 echo "" > svr_list.txt
 echo "" > cli_list.txt

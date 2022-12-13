@@ -24,6 +24,7 @@ message ResConfigData{
   optional LevelDBInfo leveldb_info = 4;
   optional bool enable_viewchange = 5;
   uint32 instance = 6;
+  uint64 client_num = 7;
 }
 
 message ReplicaStates {

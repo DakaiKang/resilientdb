@@ -47,7 +47,12 @@ absl::StatusOr<std::string> ResDBUserClient::GetResponseData(
 int ResDBUserClient::SendRequest(const google::protobuf::Message& message,
                                  Request::Type type) {
   // Use the replica obtained from the server.
-  ResDBClient::SetDestReplicaInfo(config_.GetReplicaInfos()[0]);
+  for (auto& client: config_.GetReplicaInfos()){
+    ResDBClient::SetDestReplicaInfo(client);
+    ResDBClient::SendRequest(message, type, false);
+  }
+  
+  // ResDBClient::SetDestReplicaInfo(config_.GetReplicaInfos()[0]);
   return ResDBClient::SendRequest(message, type, false);
 }
 

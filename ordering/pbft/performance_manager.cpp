@@ -181,7 +181,7 @@ int PerformanceManager::BatchProposeMsg() {
   eval_ready_future_.get();
   while (!stop_) {
     if (send_num_ > config_.GetMaxProcessTxn() / 4) {
-      LOG(INFO) << "send num too high, wait:" << send_num_;
+      // LOG(INFO) << "send num too high, wait:" << send_num_;
       usleep(100);
       continue;
     }
@@ -217,6 +217,7 @@ int PerformanceManager::BatchProposeMsg() {
 
 int PerformanceManager::DoBatch(
     const std::vector<std::unique_ptr<QueueItem>>& batch_req) {
+  uint64_t client_num = config_.GetConfigData().client_num();
   auto new_request =
       NewRequest(Request::TYPE_NEW_TXNS, Request(), config_.GetSelfInfo().id());
   if (new_request == nullptr) {
@@ -248,7 +249,8 @@ int PerformanceManager::DoBatch(
 
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
-  uint32_t primary = total_num_ % config_.GetConfigData().instance() + 1;
+  uint32_t primary = (total_num_ * client_num + config_.GetSelfInfo().id() % client_num) 
+                      % config_.GetConfigData().instance() + 1;
   replica_client_->SendMessage(*new_request, primary);
 
   // replica_client_->SendMessage(*new_request, GetPrimary());

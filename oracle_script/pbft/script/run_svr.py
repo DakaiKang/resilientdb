@@ -33,7 +33,8 @@ def gen_svr_config(config):
             region.replica_info.append(replica)
 
         config_data.self_region_id = 1
-        config_data.instance = 64
+        config_data.instance = 1
+        config_data.client_num = 1
         # config_data.is_performance_running = True
         # config_data.max_process_txn = 2048
         # config_data.client_batch_num = 100

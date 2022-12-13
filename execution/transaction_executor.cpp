@@ -128,7 +128,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request) {
     response = std::make_unique<BatchClientResponse>();
   }
 
-  global_stats_->IncTotalRequest(batch_request.client_requests_size());
+  // global_stats_->IncTotalRequest(batch_request.client_requests_size());
+
+  // Payload
+  global_stats_->IncTotalRequest(100);
 
   response->set_createtime(batch_request.createtime());
   response->set_local_id(batch_request.local_id());

@@ -9,9 +9,9 @@ cert_path="pbft_cert"
 
 def gen_cli_config(config):
     iplist=get_ips(config["cli_ip_file"])
-    with open(config["cli_config_path"],"w") as f:
-        for idx,ip in iplist:
-            port = int(config["base_port"]) + int(idx)
+    for idx,ip in iplist:
+        with open(config["cli_config_path"][:-7] + idx + ".config","w") as f:
+            port = int(idx) + int(config["base_port"])
             f.writelines("{} {} {}\n".format(idx, ip, port))
 
 def upload_cli(config):
@@ -44,5 +44,5 @@ if __name__ == '__main__':
     config = read_config(config_file)
     print("config:{}".format(config))
     gen_cli_config(config)
-    upload_cli(config)
-    run_cli(config)
+    # upload_cli(config)
+    # run_cli(config)
